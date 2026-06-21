@@ -1,0 +1,33 @@
+import { UserRole } from '@prisma/client';
+
+export const PERMISSIONS = {
+  // Family management
+  FAMILY_MANAGE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+  FAMILY_VIEW: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER, UserRole.VIEWER],
+
+  // Member management
+  MEMBER_INVITE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+  MEMBER_REMOVE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+  MEMBER_ROLE_CHANGE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+
+  // Financial write operations
+  FINANCE_WRITE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER],
+  FINANCE_DELETE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+  FINANCE_VIEW: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER, UserRole.VIEWER],
+
+  // Reports
+  REPORTS_VIEW: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER, UserRole.VIEWER],
+  REPORTS_EXPORT: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+
+  // Settings
+  SETTINGS_MANAGE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+
+  // Admin
+  ADMIN_ACCESS: [UserRole.SUPER_ADMIN],
+} as const;
+
+export type PermissionKey = keyof typeof PERMISSIONS;
+
+export const can = (role: UserRole, permission: PermissionKey): boolean => {
+  return (PERMISSIONS[permission] as readonly UserRole[]).includes(role);
+};

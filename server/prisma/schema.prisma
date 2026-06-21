@@ -1,0 +1,807 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  TENANT_OWNER
+  FAMILY_HEAD
+  MEMBER
+  VIEWER
+}
+
+enum PlanType {
+  FREE
+  PRO
+  FAMILY
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum IncomeType {
+  SALARY
+  BUSINESS
+  RENTAL
+  FREELANCE
+  BONUS
+  INVESTMENT
+  OTHER
+}
+
+enum Frequency {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum EMIStatus {
+  ACTIVE
+  COMPLETED
+  DEFAULTED
+  FORECLOSED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  PARTIAL
+  WAIVED
+}
+
+enum GoalType {
+  EMERGENCY_FUND
+  CAR
+  HOUSE
+  VACATION
+  WEDDING
+  EDUCATION
+  RETIREMENT
+  CUSTOM
+}
+
+enum InvestmentType {
+  STOCKS
+  MUTUAL_FUND
+  FIXED_DEPOSIT
+  PPF
+  NPS
+  GOLD
+  CRYPTO
+  REAL_ESTATE
+  BONDS
+  OTHER
+}
+
+enum AssetType {
+  VEHICLE
+  PROPERTY
+  ELECTRONICS
+  JEWELRY
+  FURNITURE
+  LAND
+  OTHER
+}
+
+enum LiabilityType {
+  HOME_LOAN
+  CAR_LOAN
+  PERSONAL_LOAN
+  CREDIT_CARD
+  EDUCATION_LOAN
+  BUSINESS_LOAN
+  OTHER
+}
+
+enum BillType {
+  ELECTRICITY
+  WATER
+  GAS
+  INTERNET
+  PHONE
+  CABLE_TV
+  INSURANCE
+  SUBSCRIPTION
+  OTHER
+}
+
+enum NotificationType {
+  EMI_DUE
+  BILL_DUE
+  RENT_DUE
+  SCHOOL_FEE_DUE
+  CHIT_DUE
+  BUDGET_EXCEEDED
+  BUDGET_WARNING
+  GOAL_ACHIEVED
+  GOAL_MILESTONE
+  INVITATION
+  SYSTEM
+  ANNOUNCEMENT
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  INVITE_SENT
+  INVITE_ACCEPTED
+  ROLE_CHANGED
+  PASSWORD_CHANGED
+}
+
+// ─── User & Auth ────────────────────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String
+  firstName           String
+  lastName            String
+  phone               String?
+  avatar              String?
+  isVerified          Boolean   @default(false)
+  isActive            Boolean   @default(true)
+  verificationToken   String?
+  verificationExpiry  DateTime?
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  familyMembers       FamilyMember[]
+  refreshTokens       RefreshToken[]
+  sessions            Session[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String    @id @default(cuid())
+  userId      String
+  token       String    @unique
+  expiresAt   DateTime
+  isRevoked   Boolean   @default(false)
+  device      String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String
+  device        String?
+  ip            String?
+  userAgent     String?
+  isActive      Boolean   @default(true)
+  lastActiveAt  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ─── Tenant & Family ────────────────────────────────────────────────────────
+
+model Tenant {
+  id        String    @id @default(cuid())
+  name      String
+  plan      PlanType  @default(FREE)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  families  Family[]
+
+  @@map("tenants")
+}
+
+model Family {
+  id        String    @id @default(cuid())
+  tenantId  String
+  name      String
+  code      String    @unique
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members           FamilyMember[]
+  invites           Invite[]
+  incomes           Income[]
+  expenses          Expense[]
+  expenseCategories ExpenseCategory[]
+  budgets           Budget[]
+  goals             Goal[]
+  emis              EMI[]
+  schoolFees        SchoolFee[]
+  rents             Rent[]
+  bills             Bill[]
+  chitFunds         ChitFund[]
+  investments       Investment[]
+  assets            Asset[]
+  liabilities       Liability[]
+  notifications     Notification[]
+  reminders         Reminder[]
+  documents         Document[]
+  subscription      Subscription?
+  settings          FamilySettings?
+  auditLogs         AuditLog[]
+
+  @@index([tenantId])
+  @@index([code])
+  @@map("families")
+}
+
+model FamilyMember {
+  id        String    @id @default(cuid())
+  familyId  String
+  userId    String
+  role      UserRole  @default(MEMBER)
+  isActive  Boolean   @default(true)
+  joinedAt  DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  family    Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomes   Income[]
+  expenses  Expense[]
+
+  @@unique([familyId, userId])
+  @@index([familyId])
+  @@index([userId])
+  @@map("family_members")
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  familyId    String
+  email       String
+  role        UserRole  @default(MEMBER)
+  token       String    @unique
+  expiresAt   DateTime
+  isAccepted  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  family      Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([token])
+  @@index([email])
+  @@map("invites")
+}
+
+model FamilySettings {
+  id                  String    @id @default(cuid())
+  familyId            String    @unique
+  currency            String    @default("INR")
+  currencySymbol      String    @default("₹")
+  timezone            String    @default("Asia/Kolkata")
+  language            String    @default("en")
+  dateFormat          String    @default("DD/MM/YYYY")
+  financialYearStart  Int       @default(4)
+  emailReminders      Boolean   @default(true)
+  pushReminders       Boolean   @default(true)
+  reminderDaysBefore  Int       @default(3)
+  updatedAt           DateTime  @updatedAt
+
+  family              Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@map("family_settings")
+}
+
+// ─── Income ─────────────────────────────────────────────────────────────────
+
+model Income {
+  id          String     @id @default(cuid())
+  familyId    String
+  memberId    String
+  type        IncomeType
+  amount      Decimal    @db.Decimal(12, 2)
+  description String?
+  date        DateTime
+  isRecurring Boolean    @default(false)
+  frequency   Frequency? @default(MONTHLY)
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  family      Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  member      FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([memberId])
+  @@index([date])
+  @@map("incomes")
+}
+
+// ─── Expense ────────────────────────────────────────────────────────────────
+
+model ExpenseCategory {
+  id        String    @id @default(cuid())
+  familyId  String
+  name      String
+  icon      String?
+  color     String?
+  parentId  String?
+  isDefault Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  family    Family            @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  parent    ExpenseCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  ExpenseCategory[] @relation("CategoryHierarchy")
+  expenses  Expense[]
+  budgets   Budget[]
+
+  @@index([familyId])
+  @@index([parentId])
+  @@map("expense_categories")
+}
+
+model Expense {
+  id            String    @id @default(cuid())
+  familyId      String
+  memberId      String
+  categoryId    String?
+  amount        Decimal   @db.Decimal(12, 2)
+  description   String
+  date          DateTime
+  isRecurring   Boolean   @default(false)
+  frequency     Frequency? @default(MONTHLY)
+  tags          String[]
+  notes         String?
+  paymentMethod String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  family        Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  member        FamilyMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  category      ExpenseCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  receipts      Receipt[]
+
+  @@index([familyId])
+  @@index([memberId])
+  @@index([categoryId])
+  @@index([date])
+  @@map("expenses")
+}
+
+model Receipt {
+  id            String    @id @default(cuid())
+  familyId      String
+  expenseId     String
+  url           String
+  cloudinaryId  String
+  fileName      String?
+  fileSize      Int?
+  mimeType      String?
+  createdAt     DateTime  @default(now())
+
+  expense       Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([expenseId])
+  @@map("receipts")
+}
+
+// ─── Budget ─────────────────────────────────────────────────────────────────
+
+model Budget {
+  id          String    @id @default(cuid())
+  familyId    String
+  categoryId  String?
+  amount      Decimal   @db.Decimal(12, 2)
+  month       Int
+  year        Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  family      Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  category    ExpenseCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([familyId, categoryId, month, year])
+  @@index([familyId])
+  @@map("budgets")
+}
+
+// ─── Goals ──────────────────────────────────────────────────────────────────
+
+model Goal {
+  id            String    @id @default(cuid())
+  familyId      String
+  name          String
+  type          GoalType  @default(CUSTOM)
+  targetAmount  Decimal   @db.Decimal(12, 2)
+  savedAmount   Decimal   @db.Decimal(12, 2) @default(0)
+  deadline      DateTime?
+  icon          String?
+  color         String?
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  family        Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  contributions GoalContribution[]
+
+  @@index([familyId])
+  @@map("goals")
+}
+
+model GoalContribution {
+  id        String    @id @default(cuid())
+  goalId    String
+  amount    Decimal   @db.Decimal(12, 2)
+  note      String?
+  date      DateTime
+  createdAt DateTime  @default(now())
+
+  goal      Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@map("goal_contributions")
+}
+
+// ─── EMI ────────────────────────────────────────────────────────────────────
+
+model EMI {
+  id            String    @id @default(cuid())
+  familyId      String
+  name          String
+  lenderName    String?
+  loanAmount    Decimal   @db.Decimal(12, 2)
+  interestRate  Decimal   @db.Decimal(5, 2)
+  tenureMonths  Int
+  monthlyEMI    Decimal   @db.Decimal(12, 2)
+  startDate     DateTime
+  endDate       DateTime
+  dueDay        Int
+  paidMonths    Int       @default(0)
+  status        EMIStatus @default(ACTIVE)
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  family        Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  payments      EMIPayment[]
+
+  @@index([familyId])
+  @@map("emis")
+}
+
+model EMIPayment {
+  id        String        @id @default(cuid())
+  emiId     String
+  amount    Decimal       @db.Decimal(12, 2)
+  paidDate  DateTime?
+  dueDate   DateTime
+  status    PaymentStatus @default(PENDING)
+  month     Int
+  year      Int
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  emi       EMI           @relation(fields: [emiId], references: [id], onDelete: Cascade)
+
+  @@unique([emiId, month, year])
+  @@index([emiId])
+  @@map("emi_payments")
+}
+
+// ─── School Fees ────────────────────────────────────────────────────────────
+
+model SchoolFee {
+  id            String        @id @default(cuid())
+  familyId      String
+  studentName   String
+  school        String
+  class         String?
+  amount        Decimal       @db.Decimal(12, 2)
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        PaymentStatus @default(PENDING)
+  term          String?
+  academicYear  String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("school_fees")
+}
+
+// ─── Rent ───────────────────────────────────────────────────────────────────
+
+model Rent {
+  id            String        @id @default(cuid())
+  familyId      String
+  propertyName  String
+  landlordName  String?
+  landlordPhone String?
+  amount        Decimal       @db.Decimal(12, 2)
+  dueDay        Int
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        PaymentStatus @default(PENDING)
+  month         Int
+  year          Int
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("rents")
+}
+
+// ─── Bills ──────────────────────────────────────────────────────────────────
+
+model Bill {
+  id            String        @id @default(cuid())
+  familyId      String
+  type          BillType
+  name          String
+  providerName  String?
+  amount        Decimal       @db.Decimal(12, 2)
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        PaymentStatus @default(PENDING)
+  isRecurring   Boolean       @default(true)
+  frequency     Frequency     @default(MONTHLY)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("bills")
+}
+
+// ─── Chit Fund ──────────────────────────────────────────────────────────────
+
+model ChitFund {
+  id              String        @id @default(cuid())
+  familyId        String
+  name            String
+  organizer       String?
+  totalAmount     Decimal       @db.Decimal(12, 2)
+  monthlyAmount   Decimal       @db.Decimal(12, 2)
+  totalMembers    Int
+  startDate       DateTime
+  endDate         DateTime
+  dueDay          Int
+  isActive        Boolean       @default(true)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  family          Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  payments        ChitPayment[]
+
+  @@index([familyId])
+  @@map("chit_funds")
+}
+
+model ChitPayment {
+  id          String        @id @default(cuid())
+  chitFundId  String
+  month       Int
+  year        Int
+  amount      Decimal       @db.Decimal(12, 2)
+  paidDate    DateTime?
+  dueDate     DateTime
+  status      PaymentStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  chitFund    ChitFund      @relation(fields: [chitFundId], references: [id], onDelete: Cascade)
+
+  @@unique([chitFundId, month, year])
+  @@index([chitFundId])
+  @@map("chit_payments")
+}
+
+// ─── Investments / Assets / Liabilities ─────────────────────────────────────
+
+model Investment {
+  id              String         @id @default(cuid())
+  familyId        String
+  type            InvestmentType
+  name            String
+  investedAmount  Decimal        @db.Decimal(12, 2)
+  currentValue    Decimal        @db.Decimal(12, 2)
+  units           Decimal?       @db.Decimal(12, 4)
+  purchaseDate    DateTime
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  family          Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("investments")
+}
+
+model Asset {
+  id            String    @id @default(cuid())
+  familyId      String
+  name          String
+  type          AssetType
+  value         Decimal   @db.Decimal(12, 2)
+  purchaseDate  DateTime?
+  purchaseValue Decimal?  @db.Decimal(12, 2)
+  description   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  family        Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("assets")
+}
+
+model Liability {
+  id            String        @id @default(cuid())
+  familyId      String
+  name          String
+  type          LiabilityType
+  amount        Decimal       @db.Decimal(12, 2)
+  interestRate  Decimal?      @db.Decimal(5, 2)
+  dueDate       DateTime?
+  description   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("liabilities")
+}
+
+// ─── Notifications & Reminders ──────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  familyId  String
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  family    Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Reminder {
+  id          String    @id @default(cuid())
+  familyId    String
+  entityType  String
+  entityId    String
+  title       String
+  remindAt    DateTime
+  isSent      Boolean   @default(false)
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  family      Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([remindAt, isSent])
+  @@map("reminders")
+}
+
+// ─── Documents ──────────────────────────────────────────────────────────────
+
+model Document {
+  id            String    @id @default(cuid())
+  familyId      String
+  name          String
+  type          String
+  url           String
+  cloudinaryId  String
+  fileSize      Int?
+  mimeType      String?
+  tags          String[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  family        Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@map("documents")
+}
+
+// ─── Subscription ───────────────────────────────────────────────────────────
+
+model Subscription {
+  id            String             @id @default(cuid())
+  familyId      String             @unique
+  plan          PlanType           @default(FREE)
+  status        SubscriptionStatus @default(TRIAL)
+  startDate     DateTime           @default(now())
+  renewalDate   DateTime?
+  cancelledAt   DateTime?
+  trialEndsAt   DateTime?
+  paymentMethod String?
+  externalId    String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  family        Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+// ─── Audit Log ──────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  familyId  String?
+  userId    String?
+  action    AuditAction
+  entity    String
+  entityId  String?
+  oldData   Json?
+  newData   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime    @default(now())
+
+  family    Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([familyId])
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
