@@ -1,28 +1,31 @@
 import { useEffect, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/services/api';
+import { authApi } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { QK } from '@/constants/queryKeys';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { accessToken, setUser, setMember, logout } = useAuthStore();
 
-  useQuery({
+  const { data, isError } = useQuery({
     queryKey: QK.ME,
-    queryFn: async () => {
-      const { data } = await api.get('/auth/me');
-      setUser(data.data.user);
-      setMember(data.data.member);
-      return data.data;
-    },
+    queryFn: authApi.me,
     enabled: !!accessToken,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });
 
   useEffect(() => {
-    if (!accessToken) logout();
-  }, [accessToken, logout]);
+    if (data) {
+      setUser(data.user);
+      if (data.member) setMember(data.member);
+    }
+  }, [data, setUser, setMember]);
+
+  useEffect(() => {
+    // No token, or the session probe failed after refresh attempts — sign out.
+    if (!accessToken || isError) logout();
+  }, [accessToken, isError, logout]);
 
   return <>{children}</>;
 };

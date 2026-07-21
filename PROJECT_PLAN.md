@@ -603,16 +603,16 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [ ] 0.9 Frontend: Router setup + layouts
 - [ ] 0.10 Axios instance + interceptors
 
-### Phase 1 — Authentication
-- [ ] 1.1 Register (email + password, auto-create family + tenant)
-- [ ] 1.2 Email verification (OTP / token link)
-- [ ] 1.3 Login → JWT access token + refresh token
-- [ ] 1.4 Refresh token rotation
-- [ ] 1.5 Forgot password → email link
-- [ ] 1.6 Reset password
-- [ ] 1.7 Logout (invalidate refresh token)
-- [ ] 1.8 Auth middleware (JWT verification)
-- [ ] 1.9 Frontend: All auth pages + forms
+### Phase 1 — Authentication ✅ (implemented — pending review)
+- [x] 1.1 Register (email + password, auto-create family + tenant)
+- [x] 1.2 Email verification (OTP / token link)
+- [x] 1.3 Login → JWT access token + refresh token
+- [x] 1.4 Refresh token rotation
+- [x] 1.5 Forgot password → email link
+- [x] 1.6 Reset password
+- [x] 1.7 Logout (invalidate refresh token)
+- [x] 1.8 Auth middleware (JWT verification)
+- [x] 1.9 Frontend: All auth pages + forms
 
 ### Phase 2 — Family & Members & RBAC
 - [ ] 2.1 Family workspace management

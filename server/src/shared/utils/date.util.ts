@@ -31,3 +31,18 @@ export const addDays = (date: Date, days: number): Date => {
 export const isExpired = (date: Date): boolean => date < new Date();
 
 export const formatDate = (date: Date): string => date.toISOString().split('T')[0];
+
+/** Parse a short duration string (e.g. "15m", "7d", "30s", "12h") into milliseconds. */
+export const parseDurationMs = (value: string): number => {
+  const match = /^(\d+)\s*([smhd])$/.exec(value.trim());
+  if (!match) return 0;
+  const amount = Number(match[1]);
+  const unit = match[2];
+  const multipliers: Record<string, number> = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  };
+  return amount * multipliers[unit];
+};

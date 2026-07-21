@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import { corsOptions } from './cors';
 import { generalLimiter } from '../middlewares/rateLimit.middleware';
 import { errorMiddleware, notFoundMiddleware } from '../middlewares/error.middleware';
+import { apiRoutes } from '../routes';
 import { env } from './env';
 
 export const createApp = (): express.Application => {
@@ -41,8 +42,10 @@ export const createApp = (): express.Application => {
     res.json({ status: 'ok', env: env.NODE_ENV, timestamp: new Date().toISOString() });
   });
 
-  // ── API routes (registered in server.ts)
   app.set('trust proxy', 1);
+
+  // ── API routes
+  app.use('/api/v1', apiRoutes);
 
   // ── 404 handler
   app.use(notFoundMiddleware);

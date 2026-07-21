@@ -147,3 +147,6 @@ server/dist/
 client/dist/
 uploads/
 .DS_Store
+
+# Personal study / phase implementation notes (not for the repo)
+PHASE_NOTES.md
