@@ -34,6 +34,16 @@ services:
       timeout: 5s
       retries: 5
 
+  # Dev mail catcher — the app "sends" here, you read the mail in the browser.
+  # SMTP on :1025, web UI on http://localhost:8025
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ffm_mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+
 volumes:
   postgres_data:
   redis_data:

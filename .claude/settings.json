@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(docker --version; \"docker exit: $LASTEXITCODE\"; docker ps --format \"{{.Names}} {{.Status}}\"; \"ps exit: $LASTEXITCODE\"; node --version)",
+      "Bash(npx tsc *)",
+      "Read(//e/project/**)"
+    ]
+  }
+}

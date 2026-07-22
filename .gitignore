@@ -150,3 +150,6 @@ uploads/
 
 # Personal study / phase implementation notes (not for the repo)
 PHASE_NOTES.md
+
+# Claude Code local (personal) settings
+.claude/settings.local.json

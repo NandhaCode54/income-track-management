@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -16,6 +16,10 @@ import { toast } from '@/components/ui/toast';
 
 const RegisterPage = () => {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Carries an invite's ?redirect= through to the login link shown after signing up.
+  const loginHref = `${ROUTES.LOGIN}${searchParams.toString() ? `?${searchParams}` : ''}`;
 
   const {
     register,
@@ -51,7 +55,7 @@ const RegisterPage = () => {
           </p>
         </div>
         <Button asChild variant="outline" className="w-full">
-          <Link to={ROUTES.LOGIN}>Back to login</Link>
+          <Link to={loginHref}>Back to login</Link>
         </Button>
       </div>
     );
@@ -155,7 +159,7 @@ const RegisterPage = () => {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-medium text-primary hover:underline">
+        <Link to={loginHref} className="font-medium text-primary hover:underline">
           Sign in
         </Link>
       </p>

@@ -166,16 +166,21 @@ model User {
   resetToken          String?
   resetTokenExpiry    DateTime?
   lastLoginAt         DateTime?
+  /// The family workspace the user is currently working in (they may belong to several).
+  activeFamilyId      String?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
+  activeFamily        Family?   @relation("ActiveFamily", fields: [activeFamilyId], references: [id], onDelete: SetNull)
   familyMembers       FamilyMember[]
   refreshTokens       RefreshToken[]
   sessions            Session[]
   notifications       Notification[]
   auditLogs           AuditLog[]
+  sentInvites         Invite[]
 
   @@index([email])
+  @@index([activeFamilyId])
   @@map("users")
 }
 
@@ -259,6 +264,7 @@ model Family {
   subscription      Subscription?
   settings          FamilySettings?
   auditLogs         AuditLog[]
+  activeForUsers    User[]            @relation("ActiveFamily")
 
   @@index([tenantId])
   @@index([code])
@@ -293,10 +299,14 @@ model Invite {
   token       String    @unique
   expiresAt   DateTime
   isAccepted  Boolean   @default(false)
+  acceptedAt  DateTime?
+  invitedById String?
   createdAt   DateTime  @default(now())
 
   family      Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  invitedBy   User?     @relation(fields: [invitedById], references: [id], onDelete: SetNull)
 
+  @@unique([familyId, email])
   @@index([familyId])
   @@index([token])
   @@index([email])

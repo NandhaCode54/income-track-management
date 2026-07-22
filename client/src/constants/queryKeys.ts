@@ -5,10 +5,16 @@ export const QK = {
   // Family
   FAMILY: ['family'],
   FAMILY_MEMBERS: ['family', 'members'],
+  FAMILY_INVITES: ['family', 'invites'],
+  MY_FAMILIES: ['families', 'mine'],
+  INVITE_PREVIEW: (token: string) => ['invite-preview', token],
 
   // Income
   INCOME: ['income'],
-  INCOME_SUMMARY: ['income', 'summary'],
+  INCOME_LIST: (filters: unknown) => ['income', 'list', filters],
+  INCOME_DETAIL: (id: string) => ['income', 'detail', id],
+  INCOME_RECURRING: ['income', 'recurring'],
+  INCOME_SUMMARY: (params: unknown) => ['income', 'summary', params],
 
   // Expense
   EXPENSES: ['expenses'],

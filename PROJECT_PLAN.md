@@ -2,8 +2,8 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** Planning Phase  
-> **Last Updated:** 2026-06-21  
+> **Status:** In Development — Phase 3 complete  
+> **Last Updated:** 2026-07-22  
 > **Architect:** Senior Full Stack / Principal Engineer
 
 ---
@@ -180,13 +180,19 @@ PATCH  /auth/change-password       Change password
 
 #### Family & Member Endpoints
 ```
-GET    /families/me                Get my family
-PATCH  /families/me                Update family info
-POST   /families/invite            Invite member by email
-GET    /families/members           List all members
-PATCH  /families/members/:id/role  Change member role
-DELETE /families/members/:id       Remove member
-POST   /families/join/:token       Accept invite
+GET    /families                     List workspaces I belong to
+POST   /families/switch              Switch active workspace
+GET    /families/me                  Get my family
+PATCH  /families/me                  Update family info
+GET    /families/members             List all members
+PATCH  /families/members/:id/role    Change member role
+DELETE /families/members/:id         Remove member (soft)
+POST   /families/invite              Invite member by email
+GET    /families/invites             List pending invites
+POST   /families/invites/:id/resend  Re-send an invitation
+DELETE /families/invites/:id         Revoke an invitation
+GET    /families/invites/token/:t    Public invite preview (pre sign-in)
+POST   /families/join/:token         Accept invite
 ```
 
 #### Income Endpoints
@@ -615,19 +621,19 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 1.9 Frontend: All auth pages + forms
 
 ### Phase 2 — Family & Members & RBAC
-- [ ] 2.1 Family workspace management
-- [ ] 2.2 Invite member by email (token-based)
-- [ ] 2.3 Accept invite
-- [ ] 2.4 Role assignment (Family Head, Member, Viewer)
-- [ ] 2.5 Permission middleware
-- [ ] 2.6 Tenant isolation middleware
-- [ ] 2.7 Frontend: Family management UI
+- [x] 2.1 Family workspace management
+- [x] 2.2 Invite member by email (token-based)
+- [x] 2.3 Accept invite
+- [x] 2.4 Role assignment (Family Head, Member, Viewer)
+- [x] 2.5 Permission middleware
+- [x] 2.6 Tenant isolation middleware
+- [x] 2.7 Frontend: Family management UI
 
 ### Phase 3 — Income Module
-- [ ] 3.1 Income CRUD API
-- [ ] 3.2 Recurring income support
-- [ ] 3.3 Income summary/aggregation
-- [ ] 3.4 Frontend: Income list + add/edit form
+- [x] 3.1 Income CRUD API
+- [x] 3.2 Recurring income support
+- [x] 3.3 Income summary/aggregation
+- [x] 3.4 Frontend: Income list + add/edit form
 
 ### Phase 4 — Expense Module
 - [ ] 4.1 Expense Category CRUD (hierarchical)
@@ -764,8 +770,8 @@ Use this to track overall completion.
 
 - [x] Phase 0: Foundation ✅ 2026-06-21
 - [ ] Phase 1: Authentication
-- [ ] Phase 2: Family + RBAC
-- [ ] Phase 3: Income
+- [x] Phase 2: Family + RBAC
+- [x] Phase 3: Income
 - [ ] Phase 4: Expense
 - [ ] Phase 5: Budget
 - [ ] Phase 6: Dashboard

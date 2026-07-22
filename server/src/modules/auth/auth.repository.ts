@@ -102,18 +102,31 @@ export const authRepository = {
     return prisma.user.update({ where: { id }, data });
   },
 
-  /** Returns the user's active family membership with family summary. */
-  getActiveMembership(userId: string) {
-    return prisma.familyMember.findFirst({
-      where: { userId, isActive: true },
-      orderBy: { joinedAt: 'asc' },
+  /**
+   * Returns the membership for the family the user is currently working in
+   * (`user.activeFamilyId`), falling back to their oldest active membership.
+   * Mirrors the resolution done by the `resolveTenant` middleware.
+   */
+  async getActiveMembership(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
       select: {
-        id: true,
-        familyId: true,
-        role: true,
-        family: { select: { id: true, name: true, code: true } },
+        activeFamilyId: true,
+        familyMembers: {
+          where: { isActive: true, family: { isActive: true } },
+          orderBy: { joinedAt: 'asc' },
+          select: {
+            id: true,
+            familyId: true,
+            role: true,
+            family: { select: { id: true, name: true, code: true } },
+          },
+        },
       },
     });
+
+    const memberships = user?.familyMembers ?? [];
+    return memberships.find((m) => m.familyId === user?.activeFamilyId) ?? memberships[0] ?? null;
   },
 
   createRefreshToken(data: CreateRefreshTokenData) {

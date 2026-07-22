@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import { ROUTES } from '@/constants/routes';
+import { safeRedirect } from '@/lib/redirect';
 import AppLayout from '@/components/layout/AppLayout';
 import AuthLayout from '@/components/layout/AuthLayout';
 import LoadingScreen from '@/components/common/LoadingScreen';
@@ -29,6 +30,7 @@ const AssetsPage = lazy(() => import('@/pages/assets/AssetsPage'));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
 const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage'));
 const FamilyPage = lazy(() => import('@/pages/family/FamilyPage'));
+const AcceptInvitePage = lazy(() => import('@/pages/family/AcceptInvitePage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -39,7 +41,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const GuestRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  if (isAuthenticated) return <Navigate to={ROUTES.DASHBOARD} replace />;
+  const [params] = useSearchParams();
+  // Honour ?redirect= so an invite link survives a trip through sign-in.
+  if (isAuthenticated) {
+    return <Navigate to={safeRedirect(params.get('redirect'), ROUTES.DASHBOARD)} replace />;
+  }
   return <>{children}</>;
 };
 
@@ -85,6 +91,8 @@ const router = createBrowserRouter([
       { path: ROUTES.SETTINGS, element: wrap(<SettingsPage />) },
     ],
   },
+  // Standalone: an invitee may land here signed in *or* signed out.
+  { path: ROUTES.JOIN_FAMILY, element: wrap(<AcceptInvitePage />) },
   { path: '*', element: <Navigate to={ROUTES.DASHBOARD} replace /> },
 ]);
 

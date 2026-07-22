@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -9,6 +9,7 @@ import { loginSchema, type LoginForm } from '@/features/auth/auth.schemas';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { ROUTES } from '@/constants/routes';
+import { safeRedirect } from '@/lib/redirect';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,8 +19,12 @@ import type { AxiosError } from 'axios';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setUser, setMember, setAccessToken } = useAuthStore();
   const [needsVerification, setNeedsVerification] = useState<string | null>(null);
+
+  // Set when the user arrived from an invite link — return them there after signing in.
+  const redirectTo = safeRedirect(searchParams.get('redirect'), ROUTES.DASHBOARD);
 
   const {
     register,
@@ -35,7 +40,7 @@ const LoginPage = () => {
       setUser(data.user);
       if (data.member) setMember(data.member);
       toast.success('Welcome back!');
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      navigate(redirectTo, { replace: true });
     },
     onError: (error) => {
       const status = (error as AxiosError).response?.status;
@@ -122,7 +127,10 @@ const LoginPage = () => {
 
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
-        <Link to={ROUTES.REGISTER} className="font-medium text-primary hover:underline">
+        <Link
+          to={`${ROUTES.REGISTER}${searchParams.toString() ? `?${searchParams}` : ''}`}
+          className="font-medium text-primary hover:underline"
+        >
           Create one
         </Link>
       </p>
