@@ -1,42 +1,14 @@
 import { z } from 'zod';
 import { Frequency, IncomeType } from '@prisma/client';
 import { INCOME_SORT_FIELDS } from './income.types';
-
-/** `Decimal(12, 2)` — anything larger silently overflows in Postgres. */
-const MAX_AMOUNT = 9_999_999_999.99;
-
-const amountSchema = z.coerce
-  .number({ invalid_type_error: 'Amount must be a number' })
-  .finite('Amount must be a number')
-  .positive('Amount must be greater than zero')
-  .max(MAX_AMOUNT, 'Amount is too large')
-  // `x * 100` is never exactly integral for a float, so compare against its rounding
-  // instead of testing `Number.isInteger` — which would pass for *any* input.
-  .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6, {
-    message: 'Amount can have at most 2 decimal places',
-  });
-
-const dateSchema = z.coerce
-  .date({ invalid_type_error: 'Enter a valid date' })
-  .refine((value) => value.getFullYear() >= 1970, 'Date is too far in the past')
-  .refine((value) => value.getFullYear() <= 2100, 'Date is too far in the future');
-
-const idSchema = z.string().trim().min(1, 'Identifier is required');
-
-const optionalText = (max: number, label: string) =>
-  z
-    .string()
-    .trim()
-    .max(max, `${label} must be ${max} characters or fewer`)
-    .optional()
-    // Empty strings from a cleared form field mean "unset", not "".
-    .transform((value) => (value ? value : undefined));
-
-/** Accepts a real JSON boolean or the `"true"`/`"false"` strings a form may send. */
-const flexibleBoolean = z.union([
-  z.boolean(),
-  z.enum(['true', 'false']).transform((value) => value === 'true'),
-]);
+import {
+  amountSchema,
+  booleanQuery,
+  dateSchema,
+  flexibleBoolean,
+  idSchema,
+  optionalText,
+} from '../../shared/validators/field.validator';
 
 const incomeTypeSchema = z.nativeEnum(IncomeType, {
   errorMap: () => ({ message: 'Choose a valid income type' }),
@@ -105,12 +77,6 @@ export const updateIncomeSchema = z
     assertRecurrenceConsistent(value, ctx);
   });
 
-/** `true`/`false` arrive as strings on the query string. */
-const booleanQuery = z
-  .enum(['true', 'false'])
-  .transform((value) => value === 'true')
-  .optional();
-
 export const listIncomeSchema = z
   .object({
     page: z.coerce.number().int().min(1).default(1),
@@ -134,4 +100,4 @@ export const incomeSummarySchema = z.object({
   month: z.coerce.number().int().min(1).max(12).optional(),
 });
 
-export const idParamSchema = z.object({ id: idSchema });
+export { idParamSchema } from '../../shared/validators/field.validator';

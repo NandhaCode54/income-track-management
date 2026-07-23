@@ -1,5 +1,6 @@
 import { PrismaClient, UserRole, PlanType, SubscriptionStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { DEFAULT_EXPENSE_CATEGORIES } from '../src/shared/constants/categories';
 
 const prisma = new PrismaClient();
 
@@ -54,25 +55,16 @@ async function main() {
     data: { familyId: family.id },
   });
 
-  // Default expense categories
-  const categories = [
-    { name: 'Food & Dining', icon: '🍽️', color: '#f97316' },
-    { name: 'Transportation', icon: '🚗', color: '#3b82f6' },
-    { name: 'Shopping', icon: '🛍️', color: '#8b5cf6' },
-    { name: 'Entertainment', icon: '🎬', color: '#ec4899' },
-    { name: 'Health & Medical', icon: '🏥', color: '#22c55e' },
-    { name: 'Education', icon: '📚', color: '#f59e0b' },
-    { name: 'Utilities', icon: '💡', color: '#6366f1' },
-    { name: 'Personal Care', icon: '💆', color: '#14b8a6' },
-    { name: 'Household', icon: '🏠', color: '#84cc16' },
-    { name: 'Miscellaneous', icon: '📦', color: '#94a3b8' },
-  ];
-
-  for (const cat of categories) {
-    await prisma.expenseCategory.create({
-      data: { familyId: family.id, ...cat, isDefault: true },
-    });
-  }
+  // Default expense categories — the same starter set registration creates.
+  await prisma.expenseCategory.createMany({
+    data: DEFAULT_EXPENSE_CATEGORIES.map((category) => ({
+      familyId: family.id,
+      name: category.name,
+      icon: category.icon,
+      color: category.color,
+      isDefault: true,
+    })),
+  });
 
   console.log('✅ Seed complete');
   console.log('   Admin email: admin@familyfinance.app');

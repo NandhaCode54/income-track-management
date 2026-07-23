@@ -18,8 +18,11 @@ export const QK = {
 
   // Expense
   EXPENSES: ['expenses'],
-  EXPENSE_CATEGORIES: ['expense-categories'],
-  EXPENSE_SUMMARY: ['expenses', 'summary'],
+  EXPENSE_LIST: (filters: unknown) => ['expenses', 'list', filters],
+  EXPENSE_DETAIL: (id: string) => ['expenses', 'detail', id],
+  EXPENSE_RECURRING: ['expenses', 'recurring'],
+  EXPENSE_SUMMARY: (params: unknown) => ['expenses', 'summary', params],
+  EXPENSE_CATEGORIES: ['expenses', 'categories'],
 
   // Budget
   BUDGETS: ['budgets'],

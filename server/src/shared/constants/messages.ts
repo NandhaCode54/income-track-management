@@ -47,6 +47,34 @@ export const MSG = {
   INCOME_MEMBER_INACTIVE: 'That member is no longer part of this family.',
   INCOME_FREQUENCY_REQUIRED: 'Choose how often this income repeats.',
 
+  // Expense
+  EXPENSE_CREATED: 'Expense added.',
+  EXPENSE_UPDATED: 'Expense updated.',
+  EXPENSE_DELETED: 'Expense deleted.',
+  EXPENSE_NOT_YOURS: 'You can only change expenses you added.',
+  EXPENSE_MEMBER_NOT_ALLOWED: 'You can only add expenses for yourself.',
+  EXPENSE_MEMBER_INACTIVE: 'That member is no longer part of this family.',
+  EXPENSE_FREQUENCY_REQUIRED: 'Choose how often this expense repeats.',
+  EXPENSE_IMPORTED: 'Import finished.',
+  EXPENSE_IMPORT_EMPTY: 'That file has no expense rows.',
+  EXPENSE_IMPORT_TOO_LARGE: 'Import at most 1000 rows at a time.',
+  EXPENSE_IMPORT_HEADERS: 'The file needs at least a Date, Description and Amount column.',
+
+  // Expense categories
+  CATEGORY_CREATED: 'Category created.',
+  CATEGORY_UPDATED: 'Category updated.',
+  CATEGORY_DELETED: 'Category deleted.',
+  CATEGORY_DUPLICATE: 'A category with that name already exists here.',
+  CATEGORY_PARENT_INVALID: 'Choose a top-level category as the parent.',
+  CATEGORY_PARENT_SELF: 'A category cannot be its own parent.',
+  CATEGORY_HAS_CHILDREN: 'Move or delete its subcategories first.',
+  CATEGORY_NESTING_LIMIT: 'Categories can only be nested one level deep.',
+
+  // Receipts
+  RECEIPT_UPLOADED: 'Receipt uploaded.',
+  RECEIPT_DELETED: 'Receipt deleted.',
+  RECEIPT_LIMIT: 'An expense can hold at most 5 receipts.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',

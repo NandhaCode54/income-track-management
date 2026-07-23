@@ -1,10 +1,15 @@
 import { Select } from '@/components/ui/select';
 import { MONTH_NAMES } from '@/utils/formatDate';
-import type { IncomeSummaryParams } from '@/types/income.types';
+
+/** A summary window: one month, or the whole year when `month` is omitted. */
+export interface Period {
+  year: number;
+  month?: number;
+}
 
 interface PeriodSelectorProps {
-  value: IncomeSummaryParams;
-  onChange: (value: IncomeSummaryParams) => void;
+  value: Period;
+  onChange: (value: Period) => void;
 }
 
 /** Six years back is enough history for a family ledger without an unusable dropdown. */

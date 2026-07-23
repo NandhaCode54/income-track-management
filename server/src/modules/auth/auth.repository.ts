@@ -3,6 +3,7 @@ import { UserRole, PlanType, SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { generateFamilyCode } from '../../shared/utils/token.util';
 import { addDays } from '../../shared/utils/date.util';
+import { DEFAULT_EXPENSE_CATEGORIES } from '../../shared/constants/categories';
 
 interface CreateAccountData {
   firstName: string;
@@ -92,6 +93,18 @@ export const authRepository = {
           status: SubscriptionStatus.TRIAL,
           trialEndsAt: addDays(new Date(), 14),
         },
+      });
+
+      // A workspace with no categories makes the expense form unusable on day one,
+      // so the starter set is part of creating the family, not a later chore.
+      await tx.expenseCategory.createMany({
+        data: DEFAULT_EXPENSE_CATEGORIES.map((category) => ({
+          familyId: family.id,
+          name: category.name,
+          icon: category.icon,
+          color: category.color,
+          isDefault: true,
+        })),
       });
 
       return user;

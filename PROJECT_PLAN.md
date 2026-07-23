@@ -2,8 +2,8 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 3 complete  
-> **Last Updated:** 2026-07-22  
+> **Status:** In Development — Phase 4 complete  
+> **Last Updated:** 2026-07-23  
 > **Architect:** Senior Full Stack / Principal Engineer
 
 ---
@@ -208,19 +208,22 @@ GET    /income/recurring           List recurring incomes
 
 #### Expense Endpoints
 ```
-GET    /expenses                   List expenses (filter: category, date, member)
-POST   /expenses                   Add expense
-GET    /expenses/:id               Get single expense
-PATCH  /expenses/:id               Update expense
-DELETE /expenses/:id               Delete expense
-POST   /expenses/:id/receipt       Upload receipt
-GET    /expenses/summary           Summary stats
-GET    /expenses/categories        List categories
-POST   /expenses/categories        Create category
-PATCH  /expenses/categories/:id    Update category
-DELETE /expenses/categories/:id    Delete category
-POST   /expenses/import            Import CSV
-GET    /expenses/export            Export CSV
+GET    /expenses                       List expenses (filter: category, member, method,
+                                       tag, date range, amount range, search, recurring)
+POST   /expenses                       Add expense
+GET    /expenses/:id                   Get single expense
+PATCH  /expenses/:id                   Update expense
+DELETE /expenses/:id                   Delete expense
+GET    /expenses/summary               Summary stats + breakdowns
+GET    /expenses/recurring             Recurring expenses + next due date
+POST   /expenses/:id/receipt           Upload receipt (multipart)
+DELETE /expenses/:id/receipts/:rid     Delete a receipt
+GET    /expenses/categories            List categories (tree)
+POST   /expenses/categories            Create category
+PATCH  /expenses/categories/:id        Update category
+DELETE /expenses/categories/:id        Delete category
+POST   /expenses/import                Import CSV (multipart)
+GET    /expenses/export                Export CSV (honours the list filters)
 ```
 
 #### Budget Endpoints
@@ -636,12 +639,12 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 3.4 Frontend: Income list + add/edit form
 
 ### Phase 4 — Expense Module
-- [ ] 4.1 Expense Category CRUD (hierarchical)
-- [ ] 4.2 Expense CRUD API
-- [ ] 4.3 Receipt upload (Cloudinary)
-- [ ] 4.4 CSV import/export
-- [ ] 4.5 Expense filters + search + pagination
-- [ ] 4.6 Frontend: Expense UI complete
+- [x] 4.1 Expense Category CRUD (hierarchical, two levels)
+- [x] 4.2 Expense CRUD API
+- [x] 4.3 Receipt upload (Cloudinary)
+- [x] 4.4 CSV import/export
+- [x] 4.5 Expense filters + search + pagination
+- [x] 4.6 Frontend: Expense UI complete
 
 ### Phase 5 — Budget Planning
 - [ ] 5.1 Monthly budget per category
@@ -772,7 +775,7 @@ Use this to track overall completion.
 - [ ] Phase 1: Authentication
 - [x] Phase 2: Family + RBAC
 - [x] Phase 3: Income
-- [ ] Phase 4: Expense
+- [x] Phase 4: Expense
 - [ ] Phase 5: Budget
 - [ ] Phase 6: Dashboard
 - [ ] Phase 7: EMI
