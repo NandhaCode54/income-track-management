@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../config/database';
-import { MAX_EXPORT_ROWS, type ExpenseSummaryQuery, type ListExpenseQuery } from './expense.types';
+import { MAX_EXPORT_ROWS, type ListExpenseQuery } from './expense.types';
+import { periodRange } from '../../shared/utils/date.util';
 
 const expenseSelect = {
   id: true,
@@ -130,16 +131,8 @@ const orderFor = (
   // A second, stable key keeps pagination deterministic when dates tie.
   sortBy === 'createdAt' ? [{ createdAt: sortOrder }] : [{ [sortBy]: sortOrder }, { createdAt: 'desc' }];
 
-/** A summary window: a single month, or the whole year when `month` is omitted. */
-const periodRange = (query: ExpenseSummaryQuery): { from: Date; to: Date } => {
-  const from = query.month ? new Date(query.year, query.month - 1, 1) : new Date(query.year, 0, 1);
-  const to = query.month
-    ? new Date(query.year, query.month, 0, 23, 59, 59, 999)
-    : new Date(query.year, 11, 31, 23, 59, 59, 999);
-  return { from, to };
-};
-
 export const expenseRepository = {
+  /** Re-exported so callers (the budget module included) share one definition. */
   periodRange,
 
   async list(familyId: string, query: ListExpenseQuery) {
@@ -296,7 +289,16 @@ export const expenseRepository = {
     const categories = ids.length
       ? await prisma.expenseCategory.findMany({
           where: { id: { in: ids } },
-          select: { id: true, name: true, color: true, parent: { select: { name: true } } },
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            icon: true,
+            // `parentId` lets the budget module roll a subcategory's spending up
+            // into the parent's budget line.
+            parentId: true,
+            parent: { select: { name: true } },
+          },
         })
       : [];
 
@@ -358,8 +360,8 @@ export const expenseRepository = {
       SELECT EXTRACT(MONTH FROM "date")::int AS month, COALESCE(SUM("amount"), 0) AS total
       FROM "expenses"
       WHERE "familyId" = ${familyId}
-        AND "date" >= ${new Date(year, 0, 1)}
-        AND "date" <= ${new Date(year, 11, 31, 23, 59, 59, 999)}
+        AND "date" >= ${periodRange({ year }).from}
+        AND "date" <= ${periodRange({ year }).to}
       GROUP BY 1
       ORDER BY 1
     `;

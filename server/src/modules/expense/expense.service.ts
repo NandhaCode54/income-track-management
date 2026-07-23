@@ -1,6 +1,7 @@
 import { Frequency, Prisma, UserRole } from '@prisma/client';
 import { expenseRepository, type ExpenseRow, type WriteExpenseData } from './expense.repository';
 import { categoryRepository } from './category.repository';
+import { runBudgetCheck } from '../budget/budget.alert';
 import { EXPENSE_CSV_HEADERS, readImportRows, toCsvRow } from './expense.csv';
 import {
   MAX_IMPORT_ROWS,
@@ -26,6 +27,7 @@ import {
   deleteFromCloudinary,
   uploadBufferToCloudinary,
 } from '../../shared/utils/cloudinary.util';
+import { monthOf } from '../../shared/utils/date.util';
 import { logger } from '../../shared/utils/logger';
 import { ForbiddenError } from '../../shared/errors/AuthError';
 import { NotFoundError } from '../../shared/errors/NotFoundError';
@@ -231,6 +233,8 @@ export const expenseService = {
       tags: input.tags ?? [],
     });
 
+    runBudgetCheck({ familyId: actor.familyId, categoryId, ...monthOf(row.date) });
+
     return toDto(row, actor.memberId);
   },
 
@@ -254,6 +258,16 @@ export const expenseService = {
         : undefined;
 
     const row = await expenseRepository.update(existing.id, { ...data, memberId });
+
+    // Only the category the expense now sits in needs re-checking. Moving it
+    // out of another one, or lowering the amount, can only reduce a line's
+    // spend — and a line that drops back under its limit raises nothing.
+    runBudgetCheck({
+      familyId: actor.familyId,
+      categoryId: row.categoryId,
+      ...monthOf(row.date),
+    });
+
     return toDto(row, actor.memberId);
   },
 
@@ -403,6 +417,11 @@ export const expenseService = {
    * Imports a CSV of expenses, attributing every row to the caller. Valid rows
    * are written even when others fail — a partial import plus a precise list of
    * what was rejected is far more useful than an all-or-nothing refusal.
+   *
+   * Note: budget alerts are deliberately **not** raised per imported row. A
+   * thousand rows across a year of categories would mean hundreds of background
+   * checks for warnings nobody reads one at a time; the budget page shows the
+   * resulting position immediately instead.
    */
   async importCsv(
     actor: ActorContext,

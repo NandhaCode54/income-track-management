@@ -15,6 +15,13 @@ export const PERMISSIONS = {
   FINANCE_DELETE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
   FINANCE_VIEW: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER, UserRole.VIEWER],
 
+  /**
+   * Setting the household's spending limits is a planning decision, not a
+   * bookkeeping one — a member may record what they spent without being able to
+   * decide what everyone is allowed to spend.
+   */
+  BUDGET_MANAGE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
+
   // Reports
   REPORTS_VIEW: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD, UserRole.MEMBER, UserRole.VIEWER],
   REPORTS_EXPORT: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],

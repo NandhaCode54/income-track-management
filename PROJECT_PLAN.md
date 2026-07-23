@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 4 complete  
+> **Status:** In Development — Phase 5 complete  
 > **Last Updated:** 2026-07-23  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -229,11 +229,15 @@ GET    /expenses/export                Export CSV (honours the list filters)
 #### Budget Endpoints
 ```
 GET    /budgets                    List budgets (month/year)
-POST   /budgets                    Create budget
-PATCH  /budgets/:id                Update budget
+GET    /budgets/vs-actual          Budget vs actual, incl. unbudgeted spending
+POST   /budgets                    Create budget (category, or family-wide cap)
+POST   /budgets/copy               Copy a month's budgets into another month
+PATCH  /budgets/:id                Update the amount
 DELETE /budgets/:id                Delete budget
-GET    /budgets/vs-actual          Budget vs actual comparison
 ```
+
+> Reads need `FINANCE_VIEW`; writes need `BUDGET_MANAGE` (owner + family head) —
+> recording spending and deciding the limits are different acts.
 
 #### Goals Endpoints
 ```
@@ -647,10 +651,10 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 4.6 Frontend: Expense UI complete
 
 ### Phase 5 — Budget Planning
-- [ ] 5.1 Monthly budget per category
-- [ ] 5.2 Budget vs actual tracking
-- [ ] 5.3 Over-budget notification trigger
-- [ ] 5.4 Frontend: Budget planner UI
+- [x] 5.1 Monthly budget per category (plus an optional family-wide cap)
+- [x] 5.2 Budget vs actual tracking
+- [x] 5.3 Over-budget notification trigger
+- [x] 5.4 Frontend: Budget planner UI
 
 ### Phase 6 — Dashboard
 - [ ] 6.1 Monthly summary aggregations
@@ -776,7 +780,7 @@ Use this to track overall completion.
 - [x] Phase 2: Family + RBAC
 - [x] Phase 3: Income
 - [x] Phase 4: Expense
-- [ ] Phase 5: Budget
+- [x] Phase 5: Budget
 - [ ] Phase 6: Dashboard
 - [ ] Phase 7: EMI
 - [ ] Phase 8: Bills/Rent/Fees

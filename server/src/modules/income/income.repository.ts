@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../config/database';
-import type { ListIncomeQuery, IncomeSummaryQuery } from './income.types';
+import type { ListIncomeQuery } from './income.types';
+import { periodRange } from '../../shared/utils/date.util';
 
 const incomeSelect = {
   id: true,
@@ -67,18 +68,8 @@ const scopedWhere = (familyId: string, query: ListIncomeQuery): Prisma.IncomeWhe
   return where;
 };
 
-/** A summary window: a single month, or the whole year when `month` is omitted. */
-const periodRange = (query: IncomeSummaryQuery): { from: Date; to: Date } => {
-  const from = query.month
-    ? new Date(query.year, query.month - 1, 1)
-    : new Date(query.year, 0, 1);
-  const to = query.month
-    ? new Date(query.year, query.month, 0, 23, 59, 59, 999)
-    : new Date(query.year, 11, 31, 23, 59, 59, 999);
-  return { from, to };
-};
-
 export const incomeRepository = {
+  /** Shared with the expense and budget modules so a "month" means one thing. */
   periodRange,
 
   async list(familyId: string, query: ListIncomeQuery) {
@@ -211,8 +202,8 @@ export const incomeRepository = {
       SELECT EXTRACT(MONTH FROM "date")::int AS month, COALESCE(SUM("amount"), 0) AS total
       FROM "incomes"
       WHERE "familyId" = ${familyId}
-        AND "date" >= ${new Date(year, 0, 1)}
-        AND "date" <= ${new Date(year, 11, 31, 23, 59, 59, 999)}
+        AND "date" >= ${periodRange({ year }).from}
+        AND "date" <= ${periodRange({ year }).to}
       GROUP BY 1
       ORDER BY 1
     `;

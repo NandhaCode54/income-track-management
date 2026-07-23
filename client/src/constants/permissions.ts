@@ -22,6 +22,7 @@ export const PERMISSIONS = {
   FINANCE_WRITE: ['TENANT_OWNER', 'FAMILY_HEAD', 'MEMBER'],
   FINANCE_DELETE: ['TENANT_OWNER', 'FAMILY_HEAD'],
   FINANCE_VIEW: ['TENANT_OWNER', 'FAMILY_HEAD', 'MEMBER', 'VIEWER'],
+  BUDGET_MANAGE: ['TENANT_OWNER', 'FAMILY_HEAD'],
   REPORTS_VIEW: ['TENANT_OWNER', 'FAMILY_HEAD', 'MEMBER', 'VIEWER'],
   REPORTS_EXPORT: ['TENANT_OWNER', 'FAMILY_HEAD'],
   SETTINGS_MANAGE: ['TENANT_OWNER', 'FAMILY_HEAD'],
@@ -44,6 +45,6 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 
 export const ROLE_DESCRIPTIONS: Record<AssignableRole, string> = {
   FAMILY_HEAD: 'Full access — can invite members and delete records.',
-  MEMBER: 'Can add and edit income, expenses and budgets.',
+  MEMBER: 'Can add and edit income and expenses, but not set budgets.',
   VIEWER: 'Read-only access to the family’s finances.',
 };

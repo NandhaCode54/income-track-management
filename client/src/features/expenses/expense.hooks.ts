@@ -63,7 +63,8 @@ const useExpenseMutation = <TArgs, TResult>(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QK.EXPENSES });
       queryClient.invalidateQueries({ queryKey: QK.DASHBOARD_SUMMARY });
-      queryClient.invalidateQueries({ queryKey: QK.BUDGET_VS_ACTUAL });
+      // Spending moves every budget line for the month, so the whole prefix goes.
+      queryClient.invalidateQueries({ queryKey: QK.BUDGETS });
       toast.success(options.successTitle);
     },
     onError: (error) => toast.error(options.errorTitle, getApiErrorMessage(error)),

@@ -26,7 +26,8 @@ export const QK = {
 
   // Budget
   BUDGETS: ['budgets'],
-  BUDGET_VS_ACTUAL: ['budgets', 'vs-actual'],
+  BUDGET_LIST: (period: unknown) => ['budgets', 'list', period],
+  BUDGET_VS_ACTUAL: (period: unknown) => ['budgets', 'vs-actual', period],
 
   // Goals
   GOALS: ['goals'],

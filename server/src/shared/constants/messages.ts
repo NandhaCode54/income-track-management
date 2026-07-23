@@ -75,6 +75,16 @@ export const MSG = {
   RECEIPT_DELETED: 'Receipt deleted.',
   RECEIPT_LIMIT: 'An expense can hold at most 5 receipts.',
 
+  // Budget
+  BUDGET_CREATED: 'Budget set.',
+  BUDGET_UPDATED: 'Budget updated.',
+  BUDGET_DELETED: 'Budget removed.',
+  BUDGET_DUPLICATE: 'A budget for that category already exists in this month.',
+  BUDGET_OVERALL_DUPLICATE: 'An overall budget already exists for this month.',
+  BUDGET_COPIED: 'Budgets copied.',
+  BUDGET_COPY_SAME_PERIOD: 'Choose a different month to copy into.',
+  BUDGET_COPY_EMPTY: 'That month has no budgets to copy.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',
