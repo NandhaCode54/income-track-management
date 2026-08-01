@@ -39,10 +39,11 @@ const ExpenseStats = ({ summary, isLoading }: ExpenseStatsProps) => {
         icon={TrendingDown}
         variant="expense"
         // Growth from a zero baseline has no meaningful percentage — the API sends null.
+        // `upIsGood: false` because spending more is not the good direction here.
         trend={
           summary.changePercent === null
             ? undefined
-            : { value: summary.changePercent, label: comparison }
+            : { value: summary.changePercent, label: comparison, upIsGood: false }
         }
       />
       <StatCard

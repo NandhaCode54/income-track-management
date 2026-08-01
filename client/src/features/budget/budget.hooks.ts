@@ -38,7 +38,7 @@ const useBudgetMutation = <TArgs, TResult>(
     mutationFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QK.BUDGETS });
-      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD_SUMMARY });
+      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD });
       toast.success(options.successTitle);
     },
     onError: (error) => toast.error(options.errorTitle, getApiErrorMessage(error)),

@@ -6,7 +6,13 @@ interface StatCardProps {
   value: string;
   subtitle?: string;
   icon: LucideIcon;
-  trend?: { value: number; label: string };
+  /**
+   * A period-over-period delta. `upIsGood` decides which way is green, because the
+   * sign alone does not say it: income rising is good news, spending rising is not,
+   * and painting a 40% *fall* in spending red would read as a warning about the
+   * best thing that happened all month.
+   */
+  trend?: { value: number; label: string; upIsGood?: boolean };
   variant?: 'default' | 'income' | 'expense' | 'savings';
   className?: string;
 }
@@ -33,7 +39,14 @@ const StatCard = ({ title, value, subtitle, icon: Icon, trend, variant = 'defaul
         <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
         {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
         {trend && (
-          <p className={cn('mt-2 text-xs font-medium', trend.value >= 0 ? 'text-emerald-600' : 'text-red-600')}>
+          <p
+            className={cn(
+              'mt-2 text-xs font-medium',
+              // Direction × whether up is good. The arrow and the sign carry the
+              // direction; the colour only says whether that is welcome.
+              trend.value >= 0 === (trend.upIsGood ?? true) ? 'text-emerald-600' : 'text-red-600',
+            )}
+          >
             {trend.value >= 0 ? '+' : ''}{trend.value}% {trend.label}
           </p>
         )}

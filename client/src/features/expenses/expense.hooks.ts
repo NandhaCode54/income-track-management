@@ -62,7 +62,7 @@ const useExpenseMutation = <TArgs, TResult>(
     mutationFn,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QK.EXPENSES });
-      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD_SUMMARY });
+      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD });
       // Spending moves every budget line for the month, so the whole prefix goes.
       queryClient.invalidateQueries({ queryKey: QK.BUDGETS });
       toast.success(options.successTitle);
@@ -111,7 +111,7 @@ export const useDeleteCategory = () => {
     mutationFn: (id: string) => expenseApi.removeCategory(id),
     onSuccess: (message) => {
       queryClient.invalidateQueries({ queryKey: QK.EXPENSES });
-      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD_SUMMARY });
+      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD });
       toast.success('Category deleted', message);
     },
     onError: (error) => toast.error('Could not delete category', getApiErrorMessage(error)),
@@ -144,7 +144,7 @@ export const useImportExpenses = () => {
       expenseApi.importCsv(args.file, args.createMissingCategories),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QK.EXPENSES });
-      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD_SUMMARY });
+      queryClient.invalidateQueries({ queryKey: QK.DASHBOARD });
     },
     onError: (error) => toast.error('Import failed', getApiErrorMessage(error)),
   });

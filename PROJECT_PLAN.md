@@ -2,8 +2,8 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 5 complete  
-> **Last Updated:** 2026-07-23  
+> **Status:** In Development — Phase 6 complete  
+> **Last Updated:** 2026-08-01  
 > **Architect:** Senior Full Stack / Principal Engineer
 
 ---
@@ -657,10 +657,10 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 5.4 Frontend: Budget planner UI
 
 ### Phase 6 — Dashboard
-- [ ] 6.1 Monthly summary aggregations
-- [ ] 6.2 Upcoming payments (EMI/Bills/Rent — even if those modules aren't full yet)
-- [ ] 6.3 Chart data APIs
-- [ ] 6.4 Frontend: Dashboard with Recharts
+- [x] 6.1 Monthly summary aggregations
+- [x] 6.2 Upcoming payments (EMI/Bills/Rent — even if those modules aren't full yet)
+- [x] 6.3 Chart data APIs
+- [x] 6.4 Frontend: Dashboard with Recharts
 
 ### Phase 7 — EMI Management
 - [ ] 7.1 EMI CRUD + calculator
@@ -781,7 +781,7 @@ Use this to track overall completion.
 - [x] Phase 3: Income
 - [x] Phase 4: Expense
 - [x] Phase 5: Budget
-- [ ] Phase 6: Dashboard
+- [x] Phase 6: Dashboard
 - [ ] Phase 7: EMI
 - [ ] Phase 8: Bills/Rent/Fees
 - [ ] Phase 9: Goals

@@ -47,10 +47,16 @@ export const QK = {
   ASSETS: ['assets'],
   LIABILITIES: ['liabilities'],
 
-  // Dashboard
-  DASHBOARD_SUMMARY: ['dashboard', 'summary'],
-  DASHBOARD_UPCOMING: ['dashboard', 'upcoming'],
-  DASHBOARD_CHARTS: ['dashboard', 'charts'],
+  /**
+   * Dashboard. `DASHBOARD` is the prefix every finance write invalidates — the
+   * page reads across income, expenses and budgets, so any of them moving it.
+   */
+  DASHBOARD: ['dashboard'],
+  DASHBOARD_SUMMARY: (period: unknown) => ['dashboard', 'summary', period],
+  DASHBOARD_UPCOMING: (days: unknown) => ['dashboard', 'upcoming', days],
+  DASHBOARD_CHARTS: (period: unknown) => ['dashboard', 'charts', period],
+  DASHBOARD_TOP_EXPENSES: (period: unknown) => ['dashboard', 'top-expenses', period],
+  DASHBOARD_CONTRIBUTION: (period: unknown) => ['dashboard', 'contribution', period],
 
   // Notifications
   NOTIFICATIONS: ['notifications'],

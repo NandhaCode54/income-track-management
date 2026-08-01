@@ -4,6 +4,7 @@ import { familyRoutes } from '../modules/family/family.routes';
 import { incomeRoutes } from '../modules/income/income.routes';
 import { expenseRoutes } from '../modules/expense/expense.routes';
 import { budgetRoutes } from '../modules/budget/budget.routes';
+import { dashboardRoutes } from '../modules/dashboard/dashboard.routes';
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use('/families', familyRoutes);
 router.use('/income', incomeRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/budgets', budgetRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 export const apiRoutes = router;

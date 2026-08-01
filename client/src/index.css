@@ -32,6 +32,24 @@
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 246 78% 15%;
     --sidebar-ring: 246 78% 60%;
+
+    /*
+     * Data-visualisation palette. Full colours, not HSL triplets: these are read
+     * straight into SVG `stroke`/`fill` attributes rather than through Tailwind.
+     *
+     * Money-in is blue, money-out is orange, and that pairing is deliberate. The
+     * emerald/rose the stat cards use for the same idea is the classic red-green
+     * confusion: measured against this app's own card surface it separates by only
+     * ΔE 5.6 under deuteranopia, below even the 6–8 floor. Blue↔orange clears
+     * every gate in both modes (worst ΔE 24.7 light / 26.8 dark). See the Phase 6
+     * notes. The cards keep their semantic tints; a chart, where two series sit on
+     * one plot and colour is the only thing telling them apart, cannot.
+     *
+     * Chrome (grid, axis, ticks) deliberately reuses the app's own border and
+     * muted tokens so the charts wear the same hairlines as every other surface.
+     */
+    --chart-income: #2a78d6;
+    --chart-expense: #eb6834;
   }
 
   .dark {
@@ -62,6 +80,13 @@
     --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 215 27.9% 12%;
     --sidebar-ring: 246 78% 65%;
+
+    /*
+     * The same two hues re-stepped for the dark card surface — a selected pair,
+     * not an automatic flip. Both clear 3:1 against `--card` in dark mode.
+     */
+    --chart-income: #3987e5;
+    --chart-expense: #d95926;
   }
 }
 
