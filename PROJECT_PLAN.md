@@ -675,9 +675,9 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 8.4 Frontend: All three UIs
 
 ### Phase 9 — Goals & Savings
-- [ ] 9.1 Goals CRUD + contribution tracking
-- [ ] 9.2 Progress calculation
-- [ ] 9.3 Frontend: Goals UI with progress bars
+- [x] 9.1 Goals CRUD + contribution tracking
+- [x] 9.2 Progress calculation
+- [x] 9.3 Frontend: Goals UI with progress bars
 
 ### Phase 10 — Chit Fund
 - [ ] 10.1 Chit fund CRUD
@@ -784,7 +784,7 @@ Use this to track overall completion.
 - [x] Phase 6: Dashboard
 - [x] Phase 7: EMI
 - [x] Phase 8: Bills/Rent/Fees
-- [ ] Phase 9: Goals
+- [x] Phase 9: Goals
 - [ ] Phase 10: Chit Fund
 - [ ] Phase 11: Investments/Assets
 - [ ] Phase 12: Notifications
