@@ -34,7 +34,12 @@ export const QK = {
 
   // EMI
   EMIS: ['emis'],
+  EMI_LIST: (filters: unknown) => ['emis', 'list', filters],
+  EMI_DETAIL: (id: string) => ['emis', 'detail', id],
+  EMI_UPCOMING: (days: unknown) => ['emis', 'upcoming', days],
   EMI_PAYMENTS: (emiId: string) => ['emis', emiId, 'payments'],
+  /** The calculator touches no stored data, so its key is the inputs alone. */
+  EMI_CALCULATOR: (input: unknown) => ['emis', 'calculator', input],
 
   // Bills/Rent/Fees
   BILLS: ['bills'],

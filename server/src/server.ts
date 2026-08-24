@@ -4,6 +4,7 @@ import { connectDatabase, disconnectDatabase } from './config/database';
 import { connectRedis } from './config/redis';
 import { env } from './config/env';
 import { logger } from './shared/utils/logger';
+import { startScheduler, stopScheduler } from './jobs/scheduler';
 
 const bootstrap = async (): Promise<void> => {
   const app = createApp();
@@ -15,9 +16,16 @@ const bootstrap = async (): Promise<void> => {
     logger.info(`🚀 Server running on port ${env.PORT} [${env.NODE_ENV}]`);
   });
 
+  // After the database is up: a tick that fires against a closed pool is a
+  // logged error and a reminder nobody gets.
+  startScheduler();
+
   // ── Graceful shutdown
   const shutdown = async (signal: string): Promise<void> => {
     logger.info(`${signal} received. Shutting down gracefully...`);
+    // Stop scheduling before closing the database, so no tick starts against a
+    // pool that is about to disappear.
+    stopScheduler();
     server.close(async () => {
       await disconnectDatabase();
       logger.info('Server closed');

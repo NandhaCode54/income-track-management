@@ -1,8 +1,5 @@
-const SchoolFeesPage = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold">SchoolFees</h1>
-    <p className="text-muted-foreground">Coming soon — Phase implementation pending.</p>
-  </div>
-);
+import PaymentTrackerPage from '@/features/payments/PaymentTrackerPage';
+
+const SchoolFeesPage = () => <PaymentTrackerPage kind="school-fees" />;
 
 export default SchoolFeesPage;

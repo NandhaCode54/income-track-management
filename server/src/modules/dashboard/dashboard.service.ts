@@ -26,7 +26,14 @@ import {
   type UpcomingQuery,
 } from './dashboard.types';
 import type { ActorContext } from '../../shared/types/actor';
-import { periodRange } from '../../shared/utils/date.util';
+import {
+  addDaysUtc,
+  dueDateInMonth,
+  endOfDayUtc,
+  periodRange,
+  startOfTodayUtc,
+  wholeDaysBetween,
+} from '../../shared/utils/date.util';
 
 /**
  * The dashboard is a **read-only composite**: it owns no entity of its own and
@@ -79,28 +86,6 @@ const OTHER_LABEL = 'Other';
  */
 const OVERDUE_LOOKBACK_DAYS = 90;
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-/**
- * Today at UTC midnight. Dates are stored at UTC midnight (`z.coerce.date()` on a
- * `yyyy-MM-dd` body), and `periodRange` builds its windows in UTC — so "today"
- * has to be read the same way or a due date could land on the wrong side of it.
- */
-const startOfTodayUtc = (): Date => {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-};
-
-const addDaysUtc = (date: Date, days: number): Date => new Date(date.getTime() + days * MS_PER_DAY);
-
-const endOfDayUtc = (date: Date): Date =>
-  new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999),
-  );
-
-const wholeDaysBetween = (from: Date, to: Date): number =>
-  Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
-
 /** The window immediately before this one, same length — last month. */
 const previousMonthOf = (query: DashboardPeriodQuery): { month: number; year: number } =>
   query.month === 1 ? { month: 12, year: query.year - 1 } : { month: query.month - 1, year: query.year };
@@ -126,12 +111,6 @@ const monthsInWindow = (from: Date, to: Date): { month: number; year: number }[]
   return buckets;
 };
 
-/** A `dueDay` of 31 falls on the 30th in a 30-day month, never on the 1st of the next. */
-const dueDateFor = (year: number, month: number, dueDay: number): Date => {
-  const lastDayOfMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month - 1, Math.min(dueDay, lastDayOfMonth)));
-};
-
 /**
  * Instalments an active loan owes inside the window that have no `EMIPayment` row
  * of their own yet. Until the EMI module (Phase 7) generates the schedule this is
@@ -151,7 +130,7 @@ const projectEmiInstalments = (
 
     return buckets
       .filter((bucket) => !recorded.has(`${bucket.year}-${bucket.month}`))
-      .map((bucket) => dueDateFor(bucket.year, bucket.month, emi.dueDay))
+      .map((bucket) => dueDateInMonth(bucket.year, bucket.month, emi.dueDay))
       .filter(
         (dueDate) =>
           dueDate >= from &&

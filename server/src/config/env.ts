@@ -35,6 +35,17 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().default(5),
 
+  /**
+   * Scheduled jobs run in-process. They are safe on one instance and duplicate
+   * work on several, so scaling out means enabling this on exactly one worker.
+   */
+  ENABLE_CRON: z
+    .string()
+    .transform((v) => v !== 'false')
+    .default('true'),
+  /** Reminders should land in the family's morning, not the server's. */
+  CRON_TIMEZONE: z.string().default('Asia/Kolkata'),
+
   INVITE_EXPIRES_HOURS: z.coerce.number().default(48),
   VERIFICATION_EXPIRES_HOURS: z.coerce.number().default(24),
   RESET_TOKEN_EXPIRES_MINUTES: z.coerce.number().default(30),

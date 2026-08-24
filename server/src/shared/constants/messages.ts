@@ -85,6 +85,18 @@ export const MSG = {
   BUDGET_COPY_SAME_PERIOD: 'Choose a different month to copy into.',
   BUDGET_COPY_EMPTY: 'That month has no budgets to copy.',
 
+  // EMI
+  EMI_CREATED: 'Loan added.',
+  EMI_UPDATED: 'Loan updated.',
+  EMI_DELETED: 'Loan removed.',
+  EMI_PAYMENT_RECORDED: 'Payment recorded.',
+  EMI_TERMS_LOCKED:
+    'This loan already has payments against it, so its terms can no longer be changed. Delete it and add it again to correct them.',
+  EMI_INSTALMENT_TOO_SMALL:
+    'That instalment is smaller than the first month’s interest, so the loan would never be repaid.',
+  EMI_INSTALMENT_NOT_FOUND: 'This loan has no instalment scheduled for that month.',
+  EMI_INSTALMENT_SETTLED: 'That instalment is already settled.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',

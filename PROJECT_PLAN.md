@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 6 complete  
+> **Status:** In Development — Phase 7 complete  
 > **Last Updated:** 2026-08-01  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -663,16 +663,16 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 6.4 Frontend: Dashboard with Recharts
 
 ### Phase 7 — EMI Management
-- [ ] 7.1 EMI CRUD + calculator
-- [ ] 7.2 Payment tracking
-- [ ] 7.3 Reminder cron job
-- [ ] 7.4 Frontend: EMI manager + calculator UI
+- [x] 7.1 EMI CRUD + calculator
+- [x] 7.2 Payment tracking
+- [x] 7.3 Reminder cron job
+- [x] 7.4 Frontend: EMI manager + calculator UI
 
 ### Phase 8 — Bills / Rent / School Fees
-- [ ] 8.1 Bills CRUD + recurring
-- [ ] 8.2 Rent CRUD + payment history
-- [ ] 8.3 School fees CRUD
-- [ ] 8.4 Frontend: All three UIs
+- [x] 8.1 Bills CRUD + recurring
+- [x] 8.2 Rent CRUD + payment history
+- [x] 8.3 School fees CRUD
+- [x] 8.4 Frontend: All three UIs
 
 ### Phase 9 — Goals & Savings
 - [ ] 9.1 Goals CRUD + contribution tracking
@@ -782,8 +782,8 @@ Use this to track overall completion.
 - [x] Phase 4: Expense
 - [x] Phase 5: Budget
 - [x] Phase 6: Dashboard
-- [ ] Phase 7: EMI
-- [ ] Phase 8: Bills/Rent/Fees
+- [x] Phase 7: EMI
+- [x] Phase 8: Bills/Rent/Fees
 - [ ] Phase 9: Goals
 - [ ] Phase 10: Chit Fund
 - [ ] Phase 11: Investments/Assets
