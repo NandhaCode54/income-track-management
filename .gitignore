@@ -153,3 +153,7 @@ PHASE_NOTES.md
 
 # Claude Code local (personal) settings
 .claude/settings.local.json
+.claude/settings.json
+.claude/settings.json
+/.idea
+.claude/settings.json
