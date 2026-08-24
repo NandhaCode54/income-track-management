@@ -1,8 +1,14 @@
+import { TrendingUp } from 'lucide-react';
+import PortfolioSectionPage from '@/features/portfolio/PortfolioSectionPage';
+
 const InvestmentsPage = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold">Investments</h1>
-    <p className="text-muted-foreground">Coming soon — Phase implementation pending.</p>
-  </div>
+  <PortfolioSectionPage
+    kind="investment"
+    title="Investments"
+    singular="investment"
+    description="Track what you have invested and what it is worth today."
+    icon={TrendingUp}
+  />
 );
 
 export default InvestmentsPage;

@@ -1900,3 +1900,44 @@ creating goals, recording contributions, progress bars, and role-gated deletion.
 Implemented family-scoped chit fund CRUD and one monthly payment record per fund/month/year. The
 server derives the active family from the authenticated membership; clients never supply a family or
 tenant identifier. The UI creates funds and records the current month's payment.
+
+## Phase 11 — Investments / Assets / Liabilities (retrofit)
+
+Implemented all three portfolio ledgers behind one shared shape: a generic `crudRoutes`/`crudHandlers`
+pair driven by an `EntityService<TCreate, TUpdate, TDto>` interface, so each ledger contributes only
+its validator, repository methods, and DTO mapper. Net worth is exposed under its own
+`/portfolio/net-worth` namespace because it reads across ledgers rather than owning one. The frontend
+renders each ledger with one `PortfolioSectionPage` (kind-driven) plus a shared net-worth card whose
+query is invalidated by writes on any of the three ledgers.
+
+### Retrofit notes for Phases 8–10 (quality pass)
+
+The modules built after Phase 7 drifted from house conventions; this pass brought them back:
+
+- **Payments (bills/rent/school fees).** Replaced the untyped controller/service with kind-first,
+  fully typed code and pagination metadata. Fixed the UI hardcoding every bill as
+  `isRecurring: true / frequency: 'MONTHLY'` — recurrence is now opt-in with the frequency required
+  when enabled. Deletes go through ConfirmDialog; list keys use the QK constants; every write also
+  invalidates the dashboard prefix because the upcoming strip reads these ledgers directly.
+- **Goals.** Contribution recording previously read the goal outside its transaction (lost-update
+  window) and capped the contribution row at the remaining amount while incrementing only that much,
+  so rows and aggregate could disagree. Now the row stores the full amount, `savedAmount` is
+  incremented atomically inside the transaction with the completion check performed on the re-read
+  value, and progress is clamped only at display time. A residual double-write race on `completedAt`
+  remains accepted: both writers agree the goal is complete; worst case is two near-identical stamps.
+- **Chit funds.** Added audit logging, layered the single-file module into routes/controller/
+  service/repository/types, replaced local-time `new Date()` stamps with UTC-midnight dates, and
+  validated the payment month against the fund's start/end window. Payments upsert per
+  (fund, month, year) so re-recording corrects instead of duplicating. The UI gained a zod-validated
+  form (including a total = monthly × members sanity check) and a month picker that skips months
+  already paid.
+- **Portfolio.** Gained PATCH endpoints (the plan's API surface had them; they were missing), audit
+  logging, DTO mapping, and real pages replacing the "coming soon" placeholders, including the new
+  Liabilities route/sidebar entry.
+
+| Term | Meaning |
+| --- | --- |
+| **Ledger** | One of the three portfolio tables (investments, assets, liabilities) served by one generic surface. |
+| **Net worth** | Investments + assets − liabilities; a derived figure with no table of its own. |
+| **Upsert correction** | Recording a chit month again replaces that entry, treating repeats as fixes rather than duplicates. |
+| **Kind-first signatures** | Section APIs taking the entity discriminator as the first argument so controllers can be written once per section. |

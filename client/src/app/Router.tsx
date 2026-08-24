@@ -27,6 +27,7 @@ const SchoolFeesPage = lazy(() => import('@/pages/school-fees/SchoolFeesPage'));
 const ChitFundPage = lazy(() => import('@/pages/chit-fund/ChitFundPage'));
 const InvestmentsPage = lazy(() => import('@/pages/investments/InvestmentsPage'));
 const AssetsPage = lazy(() => import('@/pages/assets/AssetsPage'));
+const LiabilitiesPage = lazy(() => import('@/pages/liabilities/LiabilitiesPage'));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
 const NotificationsPage = lazy(() => import('@/pages/notifications/NotificationsPage'));
 const FamilyPage = lazy(() => import('@/pages/family/FamilyPage'));
@@ -85,6 +86,7 @@ const router = createBrowserRouter([
       { path: ROUTES.CHIT_FUND, element: wrap(<ChitFundPage />) },
       { path: ROUTES.INVESTMENTS, element: wrap(<InvestmentsPage />) },
       { path: ROUTES.ASSETS, element: wrap(<AssetsPage />) },
+      { path: ROUTES.LIABILITIES, element: wrap(<LiabilitiesPage />) },
       { path: ROUTES.REPORTS, element: wrap(<ReportsPage />) },
       { path: ROUTES.NOTIFICATIONS, element: wrap(<NotificationsPage />) },
       { path: ROUTES.FAMILY, element: wrap(<FamilyPage />) },

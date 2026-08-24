@@ -21,6 +21,7 @@ export const ROUTES = {
   CHIT_FUND: '/chit-fund',
   INVESTMENTS: '/investments',
   ASSETS: '/assets',
+  LIABILITIES: '/liabilities',
   REPORTS: '/reports',
   NOTIFICATIONS: '/notifications',
   FAMILY: '/family',

@@ -8,6 +8,12 @@ import { dashboardRoutes } from '../modules/dashboard/dashboard.routes';
 import { emiRoutes } from '../modules/emi/emi.routes';
 import { billRoutes, rentRoutes, schoolFeeRoutes } from '../modules/payments/payments.routes';
 import { goalsRoutes } from '../modules/goals/goals.routes';
+import {
+  assetRoutes,
+  investmentRoutes,
+  liabilityRoutes,
+  portfolioRoutes,
+} from '../modules/portfolio/portfolio.routes';
 import { chitFundRoutes } from '../modules/chit-fund/chit-fund.routes';
 
 const router = Router();
@@ -24,5 +30,12 @@ router.use('/rent', rentRoutes);
 router.use('/school-fees', schoolFeeRoutes);
 router.use('/goals', goalsRoutes);
 router.use('/chit-funds', chitFundRoutes);
+
+// The portfolio ledgers mount at their own resources (the plan's API surface);
+// only the cross-ledger net-worth figure gets a namespace of its own.
+router.use('/investments', investmentRoutes);
+router.use('/assets', assetRoutes);
+router.use('/liabilities', liabilityRoutes);
+router.use('/portfolio', portfolioRoutes);
 
 export const apiRoutes = router;

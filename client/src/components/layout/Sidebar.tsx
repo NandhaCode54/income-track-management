@@ -4,7 +4,7 @@ import { ROUTES } from '@/constants/routes';
 import {
   LayoutDashboard, TrendingUp, CreditCard, PiggyBank, Target,
   Calendar, Receipt, Home, GraduationCap, Coins, BarChart3,
-  Bell, Users, Settings, TrendingDown, Briefcase,
+  Bell, Users, Settings, TrendingDown, Briefcase, Landmark,
 } from 'lucide-react';
 
 const navItems = [
@@ -20,6 +20,7 @@ const navItems = [
   { label: 'Chit Fund', icon: Coins, to: ROUTES.CHIT_FUND },
   { label: 'Investments', icon: TrendingDown, to: ROUTES.INVESTMENTS },
   { label: 'Assets', icon: Briefcase, to: ROUTES.ASSETS },
+  { label: 'Liabilities', icon: Landmark, to: ROUTES.LIABILITIES },
   { label: 'Reports', icon: BarChart3, to: ROUTES.REPORTS },
 ];
 

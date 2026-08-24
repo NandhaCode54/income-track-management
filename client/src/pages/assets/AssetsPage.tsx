@@ -1,8 +1,14 @@
+import { Home } from 'lucide-react';
+import PortfolioSectionPage from '@/features/portfolio/PortfolioSectionPage';
+
 const AssetsPage = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold">Assets</h1>
-    <p className="text-muted-foreground">Coming soon — Phase implementation pending.</p>
-  </div>
+  <PortfolioSectionPage
+    kind="asset"
+    title="Assets"
+    singular="asset"
+    description="Things the family owns that hold value."
+    icon={Home}
+  />
 );
 
 export default AssetsPage;

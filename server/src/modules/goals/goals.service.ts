@@ -1,25 +1,57 @@
-import { Prisma } from '@prisma/client';
-import { prisma } from '../../config/database';
 import { NotFoundError } from '../../shared/errors/NotFoundError';
-
-const decimal = (amount: number) => new Prisma.Decimal(amount.toFixed(2));
-const select = { id: true, name: true, type: true, targetAmount: true, savedAmount: true, deadline: true, icon: true, color: true, notes: true, isCompleted: true, completedAt: true, createdAt: true, updatedAt: true, contributions: { orderBy: { date: 'desc' as const } } } satisfies Prisma.GoalSelect;
-const toDto = (goal: Prisma.GoalGetPayload<{ select: typeof select }>) => ({ ...goal, targetAmount: Number(goal.targetAmount), savedAmount: Number(goal.savedAmount), progress: Math.min(100, Math.round((Number(goal.savedAmount) / Number(goal.targetAmount)) * 1000) / 10), contributions: goal.contributions.map((c) => ({ ...c, amount: Number(c.amount) })) });
+import { ValidationError } from '../../shared/errors/ValidationError';
+import { MSG } from '../../shared/constants/messages';
+import { goalsRepository } from './goals.repository';
+import type {
+  ContributeInput,
+  CreateGoalInput,
+  GoalDto,
+  ListGoalsQuery,
+  UpdateGoalInput,
+} from './goals.types';
+import { toDto } from './goals.types';
 
 export const goalsService = {
-  async list(familyId: string, completed?: boolean) { const goals = await prisma.goal.findMany({ where: { familyId, ...(completed === undefined ? {} : { isCompleted: completed }) }, orderBy: [{ isCompleted: 'asc' }, { deadline: 'asc' }], select }); return goals.map(toDto); },
-  async get(familyId: string, id: string) { const goal = await prisma.goal.findFirst({ where: { id, familyId }, select }); if (!goal) throw new NotFoundError('Goal'); return toDto(goal); },
-  async create(familyId: string, input: any) { const goal = await prisma.goal.create({ data: { ...input, targetAmount: decimal(input.targetAmount), familyId }, select }); return toDto(goal); },
-  async update(familyId: string, id: string, input: any) { await this.get(familyId, id); const goal = await prisma.goal.update({ where: { id }, data: { ...input, ...(input.targetAmount !== undefined ? { targetAmount: decimal(input.targetAmount) } : {}) }, select }); return toDto(goal); },
-  async remove(familyId: string, id: string) { await this.get(familyId, id); await prisma.goal.delete({ where: { id } }); },
-  async contribute(familyId: string, id: string, input: { amount: number; date?: Date; note?: string }) {
-    const existing = await this.get(familyId, id);
-    if (existing.isCompleted) throw new Error('This goal is already complete');
-    const saved = Math.min(Number(existing.targetAmount), Number(existing.savedAmount) + input.amount);
-    const goal = await prisma.$transaction(async (tx) => {
-      await tx.goalContribution.create({ data: { goalId: id, amount: decimal(input.amount), date: input.date ?? new Date(), note: input.note } });
-      return tx.goal.update({ where: { id }, data: { savedAmount: decimal(saved), isCompleted: saved >= Number(existing.targetAmount), ...(saved >= Number(existing.targetAmount) ? { completedAt: new Date() } : {}) }, select });
-    });
-    return toDto(goal);
+  async list(familyId: string, query: ListGoalsQuery): Promise<GoalDto[]> {
+    const rows = await goalsRepository.list(familyId, query);
+    return rows.map(toDto);
+  },
+
+  async getById(familyId: string, id: string): Promise<GoalDto> {
+    const row = await goalsRepository.findById(familyId, id);
+    if (!row) throw new NotFoundError('Goal');
+    return toDto(row);
+  },
+
+  async create(familyId: string, input: CreateGoalInput): Promise<GoalDto> {
+    const row = await goalsRepository.create(familyId, input);
+    return toDto(row);
+  },
+
+  async update(familyId: string, id: string, input: UpdateGoalInput): Promise<GoalDto> {
+    // Scoped first: a foreign id is invisible, not forbidden (the IDOR rule).
+    await this.getById(familyId, id);
+    const row = await goalsRepository.update(id, input);
+    return toDto(row);
+  },
+
+  async remove(familyId: string, id: string): Promise<void> {
+    await this.getById(familyId, id);
+    await goalsRepository.delete(id);
+  },
+
+  /**
+   * Adding money to a goal that is already complete is a mistake, not a 500 —
+   * the caller gets a 422 with a field error like every other validation.
+   */
+  async contribute(familyId: string, goalId: string, input: ContributeInput): Promise<GoalDto> {
+    const result = await goalsRepository.contribute(familyId, goalId, input);
+
+    if (result.outcome === 'not-found') throw new NotFoundError('Goal');
+    if (result.outcome === 'already-complete') {
+      throw new ValidationError(MSG.VALIDATION_ERROR, { amount: [MSG.GOAL_ALREADY_COMPLETE] });
+    }
+
+    return toDto(result.goal);
   },
 };

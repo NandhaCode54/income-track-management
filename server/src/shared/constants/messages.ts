@@ -97,6 +97,25 @@ export const MSG = {
   EMI_INSTALMENT_NOT_FOUND: 'This loan has no instalment scheduled for that month.',
   EMI_INSTALMENT_SETTLED: 'That instalment is already settled.',
 
+  // Goals
+  GOALS_LISTED: 'Data fetched successfully.',
+  GOAL_CREATED: 'Goal created.',
+  GOAL_UPDATED: 'Goal updated.',
+  GOAL_DELETED: 'Goal deleted.',
+  GOAL_CONTRIBUTION_ADDED: 'Contribution added.',
+  GOAL_ALREADY_COMPLETE: 'This goal has already reached its target.',
+
+  // Chit funds
+  CHIT_FUND_CREATED: 'Chit fund created.',
+  CHIT_PAYMENT_RECORDED: 'Payment recorded.',
+  CHIT_FUND_DELETED: 'Chit fund deleted.',
+  CHIT_MONTH_OUT_OF_RANGE: "That month is outside the fund's running period.",
+
+  // Portfolio
+  PORTFOLIO_ITEM_CREATED: 'Created successfully.',
+  PORTFOLIO_ITEM_UPDATED: 'Updated successfully.',
+  PORTFOLIO_ITEM_DELETED: 'Deleted successfully.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',

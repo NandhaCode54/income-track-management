@@ -51,6 +51,8 @@ export const QK = {
   INVESTMENTS: ['investments'],
   ASSETS: ['assets'],
   LIABILITIES: ['liabilities'],
+  /** Cross-ledger figure; its own namespace because it reads all three ledgers. */
+  PORTFOLIO_NET_WORTH: ['portfolio', 'net-worth'],
 
   /**
    * Dashboard. `DASHBOARD` is the prefix every finance write invalidates — the
