@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 13 complete  
+> **Status:** In Development — Phase 14 complete  
 > **Last Updated:** 2026-08-24  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -706,10 +706,10 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 13.5 Frontend: Reports page + export buttons
 
 ### Phase 14 — AI Insights
-- [ ] 14.1 Spending pattern analysis
-- [ ] 14.2 Budget recommendations
-- [ ] 14.3 Anomaly detection
-- [ ] 14.4 Frontend: Insights cards
+- [x] 14.1 Spending pattern analysis
+- [x] 14.2 Budget recommendations
+- [x] 14.3 Anomaly detection
+- [x] 14.4 Frontend: Insights cards
 
 ### Phase 15 — Admin Panel
 - [ ] 15.1 Super admin auth + panel

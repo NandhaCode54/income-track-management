@@ -10,6 +10,7 @@ import { MONTH_NAMES } from '@/utils/formatDate';
 import BudgetSnapshotCard from '@/features/dashboard/BudgetSnapshotCard';
 import CashFlowChart from '@/features/dashboard/CashFlowChart';
 import DashboardStats from '@/features/dashboard/DashboardStats';
+import InsightsPanel from '@/features/dashboard/InsightsPanel';
 import MemberContributions from '@/features/dashboard/MemberContributions';
 import SpendingByCategory from '@/features/dashboard/SpendingByCategory';
 import TopExpensesCard from '@/features/dashboard/TopExpensesCard';
@@ -137,6 +138,8 @@ const DashboardPage = () => {
         />
         <TopExpensesCard data={top.data} isLoading={top.isPending} periodLabel={periodLabel} />
       </div>
+
+      <InsightsPanel period={period} />
 
       <MemberContributions
         data={contribution.data}

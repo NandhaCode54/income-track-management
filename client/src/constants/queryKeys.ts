@@ -74,6 +74,9 @@ export const QK = {
   REPORTS_MONTHLY: ['reports', 'monthly'],
   REPORTS_YEARLY: ['reports', 'yearly'],
 
+  // Insights
+  INSIGHTS: ['insights'],
+
   // Admin
   ADMIN_USERS: ['admin', 'users'],
   ADMIN_FAMILIES: ['admin', 'families'],

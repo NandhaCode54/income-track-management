@@ -1999,3 +1999,35 @@ breakdowns, cash-flow series, and file exports.
 | **P&L** | Profit and loss: total income minus total expenses over the chosen window. |
 | **Buffered export** | Building the whole file in memory before responding, instead of streaming into the response. |
 | **REPORTS_EXPORT** | The permission that gates downloads separately from REPORTS_VIEW screen access. |
+
+## Phase 14 — AI Insights
+
+Implemented the insights surface: one composite endpoint plus a dashboard card stack. Deliberately
+**no LLM** — every insight is a small, explainable statistic over the family's own ledgers, because
+advice about someone's money must be reproducible and cheap enough to recompute per dashboard load,
+and a wrong-but-confident generated sentence is worse than a plain one that is always true.
+
+- **API.** `GET /insights?month&year` (FINANCE_VIEW) returns three families at once — patterns,
+  budget recommendations, anomalies — all derived from a single read of one analysis window (the
+  queried month plus six full months), bucketed in memory. One endpoint keeps the numbers mutually
+  consistent and saves the client three round trips.
+- **Patterns (14.1).** Avg daily spend vs last month, weekday-vs-weekend share across the window,
+  biggest category movers vs the previous month (±20% and above a ₹500 noise floor only), and a
+  six-month savings-rate trend ((income − expense) / income).
+- **Budget recommendations (14.2).** For each leaf category with spend in ≥2 of the last three full
+  months, the median monthly spend rounded up to the nearest hundred becomes the suggestion. Compared
+  against the current month's budget line it yields `create` / `raise` (>1.2× existing) / `ok`;
+  uncategorised spend is excluded — its fix is categorisation, not another budget row.
+- **Anomalies (14.3).** Three detectors, each carrying its own basis in the copy: a category running
+  ≥2× its recent monthly average (warning), single expenses beyond mean + 2σ of window amounts
+  (info, max 3), and income under 70% of its recent average (info).
+- **Frontend (14.4).** `InsightsPanel` on the dashboard renders the three families as one card:
+  anomaly rows with warning/info icons, an avg-daily-spend / weekday-share / savings-trend strip,
+  mover chips, and budget suggestion rows with action copy. It disappears entirely for fresh
+  workspaces where nothing clears the noise floors.
+
+| Term | Meaning |
+| --- | --- |
+| **Noise floor** | The minimum amount below which a variation is ignored rather than explained. |
+| **Basis months** | The full months behind a statistic; shown in the UI so advice carries its evidence. |
+| **Savings rate** | Share of income left after expenses; zero when there was no income to divide by. |
