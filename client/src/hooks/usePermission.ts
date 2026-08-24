@@ -21,9 +21,11 @@ export const usePermission = () => {
 
     return {
       role,
-      /** Does the current role hold this permission? */
+      /** Does the current role hold this permission? Super admins pass everything. */
       can: (permission: PermissionKey): boolean =>
-        !!role && (PERMISSIONS[permission] as readonly UserRole[]).includes(role),
+        !!role &&
+        (role === 'SUPER_ADMIN' ||
+          (PERMISSIONS[permission] as readonly UserRole[]).includes(role)),
 
       /** Is the current role at least as senior as `target`? */
       isAtLeast: (target: UserRole): boolean => rank >= ROLE_HIERARCHY[target],

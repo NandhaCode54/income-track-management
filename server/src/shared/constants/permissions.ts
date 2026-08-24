@@ -36,5 +36,9 @@ export const PERMISSIONS = {
 export type PermissionKey = keyof typeof PERMISSIONS;
 
 export const can = (role: UserRole, permission: PermissionKey): boolean => {
+  // A platform super admin sits above the family-role system and holds every
+  // permission — otherwise the seeded admin account is locked out of the very
+  // app it administers, because SUPER_ADMIN appears in no other grant list.
+  if (role === UserRole.SUPER_ADMIN) return true;
   return (PERMISSIONS[permission] as readonly UserRole[]).includes(role);
 };
