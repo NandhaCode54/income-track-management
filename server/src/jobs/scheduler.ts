@@ -1,7 +1,9 @@
 import cron, { type ScheduledTask } from 'node-cron';
 import { env } from '../config/env';
 import { logger } from '../shared/utils/logger';
+import { budgetAlertTask } from './budget-alert.job';
 import { emiReminderTask } from './emi-reminder.job';
+import { paymentReminderTask } from './payment-reminder.job';
 
 /**
  * The job registry.
@@ -31,6 +33,18 @@ const JOBS: Job[] = [
     // 06:00 daily — early enough to act on, late enough not to arrive overnight.
     schedule: '0 6 * * *',
     run: emiReminderTask,
+  },
+  {
+    name: 'payment-reminder',
+    // Staggered ten minutes behind the EMI sweep so the two never compete for
+    // the same connection pool mid-tick.
+    schedule: '10 6 * * *',
+    run: paymentReminderTask,
+  },
+  {
+    name: 'budget-alerts',
+    schedule: '20 6 * * *',
+    run: budgetAlertTask,
   },
 ];
 

@@ -1941,3 +1941,31 @@ The modules built after Phase 7 drifted from house conventions; this pass brough
 | **Net worth** | Investments + assets − liabilities; a derived figure with no table of its own. |
 | **Upsert correction** | Recording a chit month again replaces that entry, treating repeats as fixes rather than duplicates. |
 | **Kind-first signatures** | Section APIs taking the entity discriminator as the first argument so controllers can be written once per section. |
+
+## Phase 12 — Notifications & Reminders
+
+Implemented the notification pipeline end to end. The `Notification` table (per-user rows carrying a
+type, title, message, and JSON metadata) was already modeled; this phase built everything around it.
+
+- **API.** A notifications module exposes four personal endpoints: paginated feed
+  (`GET /notifications?unreadOnly=`), unread count, mark-one-read (`PATCH /:id/read`), and
+  mark-all-read. Every query is scoped by *both* family and user — the bell is personal even though
+  reminders are raised per household.
+- **Dispatch.** One shared `dispatchNotifications(rows, { email })` is the single door every reminder
+  walks through: one bulk insert for the in-app feed, then an email digest grouped per recipient so
+  three due bills are one mail, not three. Email failures are logged and never fail the tick.
+- **Jobs.** Two new cron sweeps join the EMI sweep (all registered in the scheduler at staggered
+  minutes): a payment sweep covering bills / rent / school fees / chit instalments within a ±3-day
+  window, and a budget sweep raising BUDGET_WARNING at 85% and BUDGET_EXCEEDED past 100% for each
+  monthly budget line. Dedupe rides in notification metadata (`entityId`, `budgetKey`) matched by a
+  bounded JSON-path query — one reminder per entity, ever. Goal completion fires inline from the
+  contribution endpoint instead of cron, because "the returned goal is complete" happens exactly once.
+- **Frontend.** The topbar bell polls the unread count every sixty seconds, shows a badge, and opens a
+  preview dropdown of the latest eight; the full page adds all/unread filters, pagination, type badges,
+  and click-to-mark-read.
+
+| Term | Meaning |
+| --- | --- |
+| **Fan-out** | Raising one notification row per active family member for a single household event. |
+| **Dedupe key** | The id stored inside notification metadata that makes a reminder fire once, not daily. |
+| **Digest** | One email summarizing every pending reminder for a recipient instead of one mail per item. |

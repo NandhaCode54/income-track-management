@@ -116,6 +116,11 @@ export const MSG = {
   PORTFOLIO_ITEM_UPDATED: 'Updated successfully.',
   PORTFOLIO_ITEM_DELETED: 'Deleted successfully.',
 
+  // Notifications
+  NOTIFICATIONS_LISTED: 'Notifications fetched.',
+  NOTIFICATIONS_READ: 'Notification marked as read.',
+  NOTIFICATIONS_ALL_READ: 'All notifications marked as read.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',

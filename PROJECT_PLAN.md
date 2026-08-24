@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 11 complete  
+> **Status:** In Development — Phase 12 complete  
 > **Last Updated:** 2026-08-24  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -692,11 +692,11 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 11.5 Frontend: All three UIs
 
 ### Phase 12 — Notifications & Reminders
-- [ ] 12.1 Notification model + service
-- [ ] 12.2 Node Cron job scheduler
-- [ ] 12.3 In-app notification bell
-- [ ] 12.4 Email reminders
-- [ ] 12.5 Frontend: Notifications panel
+- [x] 12.1 Notification model + service
+- [x] 12.2 Node Cron job scheduler
+- [x] 12.3 In-app notification bell
+- [x] 12.4 Email reminders
+- [x] 12.5 Frontend: Notifications panel
 
 ### Phase 13 — Reports & Export
 - [ ] 13.1 Monthly/yearly report APIs
