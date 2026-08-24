@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 12 complete  
+> **Status:** In Development — Phase 13 complete  
 > **Last Updated:** 2026-08-24  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -699,11 +699,11 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 12.5 Frontend: Notifications panel
 
 ### Phase 13 — Reports & Export
-- [ ] 13.1 Monthly/yearly report APIs
-- [ ] 13.2 Category-wise + member-wise reports
-- [ ] 13.3 PDF export (pdfkit)
-- [ ] 13.4 Excel export (exceljs)
-- [ ] 13.5 Frontend: Reports page + export buttons
+- [x] 13.1 Monthly/yearly report APIs
+- [x] 13.2 Category-wise + member-wise reports
+- [x] 13.3 PDF export (pdfkit)
+- [x] 13.4 Excel export (exceljs)
+- [x] 13.5 Frontend: Reports page + export buttons
 
 ### Phase 14 — AI Insights
 - [ ] 14.1 Spending pattern analysis

@@ -70,6 +70,7 @@ export const QK = {
   UNREAD_COUNT: ['notifications', 'unread-count'],
 
   // Reports
+  REPORTS: ['reports'],
   REPORTS_MONTHLY: ['reports', 'monthly'],
   REPORTS_YEARLY: ['reports', 'yearly'],
 

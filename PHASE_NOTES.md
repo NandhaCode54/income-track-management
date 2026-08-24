@@ -1969,3 +1969,33 @@ type, title, message, and JSON metadata) was already modeled; this phase built e
 | **Fan-out** | Raising one notification row per active family member for a single household event. |
 | **Dedupe key** | The id stored inside notification metadata that makes a reminder fire once, not daily. |
 | **Digest** | One email summarizing every pending reminder for a recipient instead of one mail per item. |
+
+## Phase 13 — Reports & Export
+
+Implemented the read-only reporting surface: monthly and yearly P&L, category-wise and member-wise
+breakdowns, cash-flow series, and file exports.
+
+- **API.** Seven GET endpoints under `/reports`: `monthly` (totals + both breakdowns for one month),
+  `yearly` (twelve income/expense/net buckets), `category-wise` / `member-wise` (a month or a whole
+  year via an optional `month` param), `cash-flow`, and the two export endpoints. Reads sit behind
+  REPORTS_VIEW; exports behind REPORTS_EXPORT — a downloadable file leaves the workspace, so it gets
+  its own gate beyond on-screen viewing.
+- **Aggregation discipline.** The module owns no tables: it composes the income/expense repositories'
+  existing group-by helpers plus one new income-by-member groupBy, then merges sides per member.
+  Category rows reuse the parent-child labels ("Food & Dining › Groceries") so reports, budgets, and
+  the expense list all speak the same vocabulary.
+- **PDF (pdfkit).** One A4 page: title block, totals table, category table with counts and shares,
+  member table; buffered into a Buffer rather than piped so failures before headers are ordinary 500s
+  and Content-Length is exact.
+- **Excel (exceljs).** A real workbook — Summary/By Category/By Member sheets for monthly,
+  Summary/Monthly for yearly — with styled headers and an INR number format so amounts stay numbers,
+  not text like they would in CSV.
+- **Frontend.** The reports page toggles monthly/yearly, picks period, shows three stat cards, a
+  twelve-bar cash-flow strip on yearly, and the two breakdown tables; PDF/Excel buttons download via
+  blob + object URL, mirroring the CSV export pattern.
+
+| Term | Meaning |
+| --- | --- |
+| **P&L** | Profit and loss: total income minus total expenses over the chosen window. |
+| **Buffered export** | Building the whole file in memory before responding, instead of streaming into the response. |
+| **REPORTS_EXPORT** | The permission that gates downloads separately from REPORTS_VIEW screen access. |

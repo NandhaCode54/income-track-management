@@ -16,6 +16,7 @@ import {
 } from '../modules/portfolio/portfolio.routes';
 import { chitFundRoutes } from '../modules/chit-fund/chit-fund.routes';
 import { notificationRoutes } from '../modules/notifications/notification.routes';
+import { reportRoutes } from '../modules/reports/reports.routes';
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use('/assets', assetRoutes);
 router.use('/liabilities', liabilityRoutes);
 router.use('/portfolio', portfolioRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/reports', reportRoutes);
 
 export const apiRoutes = router;
