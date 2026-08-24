@@ -680,9 +680,9 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 9.3 Frontend: Goals UI with progress bars
 
 ### Phase 10 — Chit Fund
-- [ ] 10.1 Chit fund CRUD
-- [ ] 10.2 Monthly payment tracking
-- [ ] 10.3 Frontend: Chit fund UI
+- [x] 10.1 Chit fund CRUD
+- [x] 10.2 Monthly payment tracking
+- [x] 10.3 Frontend: Chit fund UI
 
 ### Phase 11 — Investments / Assets / Liabilities
 - [ ] 11.1 Investment portfolio CRUD
@@ -785,7 +785,7 @@ Use this to track overall completion.
 - [x] Phase 7: EMI
 - [x] Phase 8: Bills/Rent/Fees
 - [x] Phase 9: Goals
-- [ ] Phase 10: Chit Fund
+- [x] Phase 10: Chit Fund
 - [ ] Phase 11: Investments/Assets
 - [ ] Phase 12: Notifications
 - [ ] Phase 13: Reports

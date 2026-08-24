@@ -8,6 +8,7 @@ import { dashboardRoutes } from '../modules/dashboard/dashboard.routes';
 import { emiRoutes } from '../modules/emi/emi.routes';
 import { billRoutes, rentRoutes, schoolFeeRoutes } from '../modules/payments/payments.routes';
 import { goalsRoutes } from '../modules/goals/goals.routes';
+import { chitFundRoutes } from '../modules/chit-fund/chit-fund.routes';
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use('/bills', billRoutes);
 router.use('/rent', rentRoutes);
 router.use('/school-fees', schoolFeeRoutes);
 router.use('/goals', goalsRoutes);
+router.use('/chit-funds', chitFundRoutes);
 
 export const apiRoutes = router;

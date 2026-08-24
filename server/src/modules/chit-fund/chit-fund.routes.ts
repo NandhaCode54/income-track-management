@@ -1,0 +1,24 @@
+import { Router } from 'express';
+import { Prisma, PaymentStatus } from '@prisma/client';
+import { z } from 'zod';
+import { authenticate } from '../../middlewares/auth.middleware';
+import { resolveTenant } from '../../middlewares/tenant.middleware';
+import { requirePermission } from '../../middlewares/rbac.middleware';
+import { validate } from '../../middlewares/validate.middleware';
+import { prisma } from '../../config/database';
+import { sendCreated, sendSuccess } from '../../shared/utils/api-response.util';
+import { actorFrom, param } from '../../shared/utils/request.util';
+import { idParamSchema, amountSchema, dateSchema, optionalText } from '../../shared/validators/field.validator';
+import { NotFoundError } from '../../shared/errors/NotFoundError';
+
+const decimal = (value: number) => new Prisma.Decimal(value.toFixed(2));
+const createSchema = z.object({ name: z.string().trim().min(1).max(100), organizer: optionalText(100, 'Organizer'), totalAmount: amountSchema, monthlyAmount: amountSchema, totalMembers: z.coerce.number().int().min(2).max(1000), startDate: dateSchema, endDate: dateSchema, dueDay: z.coerce.number().int().min(1).max(31), notes: optionalText(1000, 'Notes') }).refine((v) => v.endDate >= v.startDate, { path: ['endDate'], message: 'End date must follow start date' });
+const paymentSchema = z.object({ month: z.coerce.number().int().min(1).max(12), year: z.coerce.number().int().min(1970).max(2100), amount: amountSchema.optional(), paidDate: dateSchema.optional(), notes: optionalText(500, 'Notes') });
+const router = Router(); router.use(authenticate, resolveTenant);
+const find = async (familyId: string, id: string) => { const fund = await prisma.chitFund.findFirst({ where: { id, familyId }, include: { payments: { orderBy: { dueDate: 'asc' } } } }); if (!fund) throw new NotFoundError('Chit fund'); return fund; };
+router.get('/', requirePermission('FINANCE_VIEW'), async (req, res, next) => { try { const items = await prisma.chitFund.findMany({ where: { familyId: actorFrom(req).familyId }, include: { payments: { orderBy: { dueDate: 'asc' } } }, orderBy: { startDate: 'desc' } }); sendSuccess(res, 'Data fetched successfully.', { chitFunds: items }); } catch (e) { next(e); } });
+router.get('/:id', requirePermission('FINANCE_VIEW'), validate(idParamSchema, 'params'), async (req, res, next) => { try { sendSuccess(res, 'Data fetched successfully.', { chitFund: await find(actorFrom(req).familyId, param(req, 'id')) }); } catch (e) { next(e); } });
+router.post('/', requirePermission('FINANCE_WRITE'), validate(createSchema), async (req, res, next) => { try { const d = req.body; const fund = await prisma.chitFund.create({ data: { ...d, totalAmount: decimal(d.totalAmount), monthlyAmount: decimal(d.monthlyAmount), familyId: actorFrom(req).familyId } }); sendCreated(res, 'Chit fund created.', { chitFund: fund }); } catch (e) { next(e); } });
+router.post('/:id/payments', requirePermission('FINANCE_WRITE'), validate(idParamSchema, 'params'), validate(paymentSchema), async (req, res, next) => { try { const familyId = actorFrom(req).familyId, id = param(req, 'id'), d = req.body, fund = await find(familyId, id); const dueDate = new Date(Date.UTC(d.year, d.month - 1, Math.min(d.dueDay ?? fund.dueDay, new Date(Date.UTC(d.year, d.month, 0)).getUTCDate()))); const payment = await prisma.chitPayment.upsert({ where: { chitFundId_month_year: { chitFundId: id, month: d.month, year: d.year } }, create: { chitFundId: id, month: d.month, year: d.year, amount: decimal(d.amount ?? Number(fund.monthlyAmount)), dueDate, paidDate: d.paidDate ?? new Date(), status: PaymentStatus.PAID, notes: d.notes }, update: { amount: decimal(d.amount ?? Number(fund.monthlyAmount)), paidDate: d.paidDate ?? new Date(), status: PaymentStatus.PAID, notes: d.notes } }); sendSuccess(res, 'Payment recorded.', { payment }); } catch (e) { next(e); } });
+router.delete('/:id', requirePermission('FINANCE_DELETE'), validate(idParamSchema, 'params'), async (req, res, next) => { try { const id = param(req, 'id'); await find(actorFrom(req).familyId, id); await prisma.chitFund.delete({ where: { id } }); sendSuccess(res, 'Chit fund deleted.'); } catch (e) { next(e); } });
+export const chitFundRoutes = router;

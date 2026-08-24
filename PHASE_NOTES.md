@@ -1897,5 +1897,6 @@ creating goals, recording contributions, progress bars, and role-gated deletion.
 
 ## Phase 10 — Chit Fund
 
-Planned next: household chit funds, monthly instalment schedule and payment tracking. Each payment
-must remain tenant-scoped through its parent fund and be recorded independently from the fund terms.
+Implemented family-scoped chit fund CRUD and one monthly payment record per fund/month/year. The
+server derives the active family from the authenticated membership; clients never supply a family or
+tenant identifier. The UI creates funds and records the current month's payment.
