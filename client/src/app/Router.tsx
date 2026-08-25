@@ -7,6 +7,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import AuthLayout from '@/components/layout/AuthLayout';
 import AdminGuard from '@/components/admin/AdminGuard';
 import LoadingScreen from '@/components/common/LoadingScreen';
+import ErrorBoundary from '@/components/common/ErrorBoundary';
 
 // Auth pages
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
@@ -35,6 +36,7 @@ const FamilyPage = lazy(() => import('@/pages/family/FamilyPage'));
 const AcceptInvitePage = lazy(() => import('@/pages/family/AcceptInvitePage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage'));
+const NotFoundPage = lazy(() => import('@/pages/not-found/NotFoundPage'));
 
 // Admin pages
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
@@ -53,7 +55,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const GuestRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [params] = useSearchParams();
-  // Honour ?redirect= so an invite link survives a trip through sign-in.
   if (isAuthenticated) {
     return <Navigate to={safeRedirect(params.get('redirect'), ROUTES.DASHBOARD)} replace />;
   }
@@ -69,6 +70,7 @@ const router = createBrowserRouter([
         <AuthLayout />
       </GuestRoute>
     ),
+    errorElement: <ErrorBoundary><LoadingScreen /></ErrorBoundary>,
     children: [
       { path: ROUTES.LOGIN, element: wrap(<LoginPage />) },
       { path: ROUTES.REGISTER, element: wrap(<RegisterPage />) },
@@ -83,6 +85,7 @@ const router = createBrowserRouter([
         <AppLayout />
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundary><LoadingScreen /></ErrorBoundary>,
     children: [
       { path: ROUTES.DASHBOARD, element: wrap(<DashboardPage />) },
       { path: ROUTES.INCOME, element: wrap(<IncomePage />) },
@@ -112,6 +115,7 @@ const router = createBrowserRouter([
         </AdminGuard>
       </ProtectedRoute>
     ),
+    errorElement: <ErrorBoundary><LoadingScreen /></ErrorBoundary>,
     children: [
       { path: ROUTES.ADMIN, element: wrap(<AdminPage />) },
       { path: '/admin/dashboard', element: wrap(<AdminDashboardPage />) },
@@ -121,9 +125,8 @@ const router = createBrowserRouter([
       { path: ROUTES.ADMIN_AUDIT_LOGS, element: wrap(<AdminAuditLogsPage />) },
     ],
   },
-  // Standalone: an invitee may land here signed in *or* signed out.
   { path: ROUTES.JOIN_FAMILY, element: wrap(<AcceptInvitePage />) },
-  { path: '*', element: <Navigate to={ROUTES.DASHBOARD} replace /> },
+  { path: '*', element: wrap(<NotFoundPage />) },
 ]);
 
 export const AppRouter = () => <RouterProvider router={router} />;

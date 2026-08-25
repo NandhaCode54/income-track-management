@@ -141,6 +141,7 @@ const ExpensesPage = () => {
               icon={AlertCircle}
               title="Couldn't load expenses"
               description={getApiErrorMessage(listQuery.error)}
+              action={<Button variant="outline" onClick={() => listQuery.refetch()}>Try again</Button>}
             />
           ) : expenses.length === 0 ? (
             <EmptyState

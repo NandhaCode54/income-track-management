@@ -129,6 +129,7 @@ const IncomePage = () => {
               icon={AlertCircle}
               title="Couldn't load income"
               description={getApiErrorMessage(listQuery.error)}
+              action={<Button variant="outline" onClick={() => listQuery.refetch()}>Try again</Button>}
             />
           ) : income.length === 0 ? (
             <EmptyState

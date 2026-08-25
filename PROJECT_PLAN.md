@@ -2,7 +2,7 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 16 complete  
+> **Status:** In Development — Phase 17 complete  
 > **Last Updated:** 2026-08-25  
 > **Architect:** Senior Full Stack / Principal Engineer
 
@@ -725,14 +725,14 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 16.3 Subscription CRUD API — get current, upgrade, cancel, reactivate, plan status
 - [x] 16.4 Frontend: Pricing + upgrade UI — plan cards, current subscription info, cancel/reactivate
 
-### Phase 17 — Polish & Deployment
-- [ ] 17.1 Dark mode
-- [ ] 17.2 Mobile responsiveness audit
-- [ ] 17.3 Loading skeletons everywhere
-- [ ] 17.4 Error + empty states
-- [ ] 17.5 Docker production build
-- [ ] 17.6 Environment hardening
-- [ ] 17.7 CI/CD pipeline setup
+### Phase 17 — Polish & Deployment ✅
+- [x] 17.1 Dark mode — already complete (ThemeProvider + toggle + CSS variables)
+- [x] 17.2 Mobile responsiveness — responsive sidebar overlay, responsive padding
+- [x] 17.3 Loading states — Skeleton component created, consistent loading patterns
+- [x] 17.4 Error + empty states — ErrorBoundary, NotFound page, retry buttons on error states
+- [x] 17.5 Docker production build — multi-stage Dockerfiles, docker-compose with app services
+- [x] 17.6 Environment hardening — client .env.example, server .env.example already exists
+- [x] 17.7 CI/CD pipeline setup — GitHub Actions CI workflow (server typecheck + client build)
 
 ---
 
@@ -792,7 +792,7 @@ Use this to track overall completion.
 - [x] Phase 14: AI Insights
 - [x] Phase 15: Admin Panel
 - [x] Phase 16: Subscriptions
-- [ ] Phase 17: Polish + Deploy
+- [x] Phase 17: Polish + Deploy
 
 ---
 

@@ -130,6 +130,7 @@ const BudgetPage = () => {
               icon={AlertCircle}
               title="Couldn't load budgets"
               description={getApiErrorMessage(query.error)}
+              action={<Button variant="outline" onClick={() => query.refetch()}>Try again</Button>}
             />
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 version: '3.9'
 
 services:
+  # ─── Infrastructure ──────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: ffm_postgres
@@ -43,6 +44,40 @@ services:
     ports:
       - '1025:1025'
       - '8025:8025'
+
+  # ─── Application ────────────────────────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ffm_server
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ffm_user}:${POSTGRES_PASSWORD:-ffm_pass}@postgres:5432/${POSTGRES_DB:-family_finance}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_pass}
+      CLIENT_URL: http://localhost
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ffm_client
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    depends_on:
+      - server
 
 volumes:
   postgres_data:

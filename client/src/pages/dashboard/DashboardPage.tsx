@@ -3,6 +3,7 @@ import { AlertCircle } from 'lucide-react';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { useAuthStore } from '@/store/auth.store';
 import { getApiErrorMessage } from '@/lib/api-error';
@@ -93,6 +94,7 @@ const DashboardPage = () => {
               icon={AlertCircle}
               title="Couldn't load the dashboard"
               description={getApiErrorMessage(summary.error)}
+              action={<Button variant="outline" onClick={() => summary.refetch()}>Try again</Button>}
             />
           </CardContent>
         </Card>
