@@ -45,6 +45,7 @@ const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
 const AdminFamiliesPage = lazy(() => import('@/pages/admin/AdminFamiliesPage'));
 const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'));
 const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage'));
+const AdminAnnouncementsPage = lazy(() => import('@/pages/admin/AdminAnnouncementsPage'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -123,6 +124,7 @@ const router = createBrowserRouter([
       { path: ROUTES.ADMIN_FAMILIES, element: wrap(<AdminFamiliesPage />) },
       { path: ROUTES.ADMIN_SUBSCRIPTIONS, element: wrap(<AdminSubscriptionsPage />) },
       { path: ROUTES.ADMIN_AUDIT_LOGS, element: wrap(<AdminAuditLogsPage />) },
+      { path: '/admin/announcements', element: wrap(<AdminAnnouncementsPage />) },
     ],
   },
   { path: ROUTES.JOIN_FAMILY, element: wrap(<AcceptInvitePage />) },

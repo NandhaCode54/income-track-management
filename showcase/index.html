@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Family Finance Manager — Track Your Family's Finances Together</title>
+  <meta name="description" content="A powerful SaaS platform for families to collaboratively track income, expenses, budgets, EMIs, investments, and savings goals." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #4338ca;
+      --accent: #06b6d4;
+      --bg: #ffffff;
+      --bg-alt: #f8fafc;
+      --bg-dark: #0f172a;
+      --bg-dark-alt: #1e293b;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #f1f5f9;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ─── Navbar ──────────────────────────────────── */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .navbar .container {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.2rem; }
+    .logo-icon {
+      width: 40px; height: 40px; background: var(--primary); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; font-weight: 800;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a { font-size: 0.95rem; font-weight: 500; color: var(--text-muted); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--primary); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,0.4); }
+    .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--text-muted); padding: 8px 16px; }
+    .btn-ghost:hover { color: var(--primary); }
+    .btn-sm { padding: 8px 20px; font-size: 0.875rem; }
+
+    /* ─── Hero ─────────────────────────────────────── */
+    .hero {
+      padding: 100px 0 80px;
+      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #dbeafe 100%);
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      background: rgba(79,70,229,0.1); color: var(--primary); margin-bottom: 24px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .hero h1 {
+      font-size: 3.5rem; font-weight: 800; line-height: 1.1;
+      max-width: 800px; margin: 0 auto 24px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 40px;
+    }
+    .hero-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .hero-stats {
+      display: flex; justify-content: center; gap: 60px; margin-top: 60px; padding-top: 40px;
+      border-top: 1px solid rgba(79,70,229,0.15);
+    }
+    .hero-stat h3 { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .hero-stat p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* ─── Features ────────────────────────────────── */
+    .section { padding: 100px 0; }
+    .section-alt { background: var(--bg-alt); }
+    .section-dark { background: var(--bg-dark); color: var(--text-light); }
+    .section-title { text-align: center; margin-bottom: 60px; }
+    .section-title h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; }
+    .section-title p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+    .section-dark .section-title p { color: #94a3b8; }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;
+    }
+    .feature-card {
+      padding: 32px; border-radius: var(--radius);
+      background: #fff; border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); border-color: var(--primary); }
+    .feature-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 20px;
+    }
+    .feature-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: 0.95rem; color: var(--text-muted); }
+
+    /* ─── How It Works ────────────────────────────── */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    .step { text-align: center; }
+    .step-number {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff; font-size: 1.5rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .step h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 0.95rem; color: var(--text-muted); }
+
+    /* ─── Pricing ─────────────────────────────────── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .pricing-card {
+      padding: 40px 32px; border-radius: var(--radius); text-align: center;
+      border: 2px solid var(--border); transition: all 0.3s; position: relative;
+    }
+    .pricing-card:hover { border-color: var(--primary); transform: translateY(-4px); }
+    .pricing-card.featured { border-color: var(--primary); background: linear-gradient(180deg, #eef2ff 0%, #fff 100%); }
+    .pricing-card.featured::before {
+      content: 'Most Popular'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: #fff; padding: 4px 16px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+    .pricing-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+    .pricing-card .price { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 16px 0; }
+    .pricing-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+    .pricing-card .price small { font-size: 0.85rem; font-weight: 400; color: var(--text-muted); }
+    .pricing-features { list-style: none; text-align: left; margin: 24px 0; }
+    .pricing-features li {
+      padding: 8px 0; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;
+    }
+    .pricing-features li::before { content: '✓'; color: var(--success); font-weight: 700; }
+    .pricing-card .btn { width: 100%; justify-content: center; margin-top: 8px; }
+
+    /* ─── Testimonials ────────────────────────────── */
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+    .testimonial-card {
+      padding: 32px; border-radius: var(--radius);
+      background: var(--bg-dark-alt); border: 1px solid rgba(255,255,255,0.1);
+    }
+    .testimonial-card p { font-size: 1rem; line-height: 1.7; color: #cbd5e1; margin-bottom: 20px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--primary);
+      display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 1rem;
+    }
+    .testimonial-name { font-weight: 600; font-size: 0.95rem; }
+    .testimonial-role { font-size: 0.8rem; color: #94a3b8; }
+
+    /* ─── CTA ─────────────────────────────────────── */
+    .cta {
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      text-align: center; color: #fff;
+    }
+    .cta h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; }
+    .cta p { font-size: 1.1rem; opacity: 0.9; max-width: 500px; margin: 0 auto 40px; }
+    .btn-white { background: #fff; color: var(--primary); }
+    .btn-white:hover { background: #f1f5f9; transform: translateY(-1px); }
+
+    /* ─── Footer ──────────────────────────────────── */
+    .footer { background: var(--bg-dark); color: #94a3b8; padding: 60px 0 30px; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-brand p { margin-top: 12px; font-size: 0.9rem; line-height: 1.7; }
+    .footer h4 { color: #f1f5f9; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .footer ul { list-style: none; }
+    .footer ul li { margin-bottom: 10px; }
+    .footer ul a { font-size: 0.9rem; transition: color 0.2s; }
+    .footer ul a:hover { color: #f1f5f9; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; text-align: center; font-size: 0.85rem; }
+
+    /* ─── Responsive ──────────────────────────────── */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .hero-stats { flex-direction: column; gap: 24px; }
+      .steps { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .section-title h2 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="logo">
+        <div class="logo-icon">FF</div>
+        Family Finance
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+      </ul>
+      <div style="display:flex;gap:12px;">
+        <a href="/login" class="btn btn-ghost btn-sm">Log In</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get Started Free</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge"><span class="dot"></span> Now in Beta</div>
+      <h1>Manage Your Family's Finances, Together</h1>
+      <p>A powerful platform for families to collaboratively track income, expenses, budgets, EMIs, investments, and savings goals — all in one place.</p>
+      <div class="hero-buttons">
+        <a href="/register" class="btn btn-primary">Start Free — No Credit Card</a>
+        <a href="#features" class="btn btn-outline">Explore Features</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <h3>16+</h3>
+          <p>Finance Modules</p>
+        </div>
+        <div class="hero-stat">
+          <h3>Multi-tenant</h3>
+          <p>Family Workspaces</p>
+        </div>
+        <div class="hero-stat">
+          <h3>Real-time</h3>
+          <p>Collaborative Tracking</p>
+        </div>
+        <div class="hero-stat">
+          <h3>RBAC</h3>
+          <p>Role-based Access</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>Everything Your Family Needs</h2>
+        <p>From daily expenses to long-term investments, manage every aspect of your family's financial life.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#eef2ff;">💰</div>
+          <h3>Income Tracking</h3>
+          <p>Track all family income sources with recurring entries, summaries, and multi-member contributions.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fef3c7;">🧾</div>
+          <h3>Expense Management</h3>
+          <p>Categorize expenses, attach receipts, import from CSV, and set spending limits with budgets.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#dcfce7;">📊</div>
+          <h3>Budget Planning</h3>
+          <p>Set monthly budgets per category, track actual vs planned spending, and stay on top of finances.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fce7f3;">🎯</div>
+          <h3>Savings Goals</h3>
+          <p>Create and track savings goals with progress indicators and family contributions.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#e0e7ff;">📅</div>
+          <h3>EMI Tracker</h3>
+          <p>Track all loan EMIs, payment history, upcoming dues, and get smart reminders.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#ccfbf1;">📈</div>
+          <h3>Investment Portfolio</h3>
+          <p>Manage investments, assets, and liabilities with net worth calculations and insights.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fee2e2;">🏠</div>
+          <h3>Bills & Rent</h3>
+          <p>Track recurring bills, rent payments, school fees, and chit funds in dedicated modules.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#f3e8ff;">📄</div>
+          <h3>Reports & Export</h3>
+          <p>Generate monthly/yearly reports with PDF and Excel export for record keeping.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#ecfdf5;">🤝</div>
+          <h3>Family Collaboration</h3>
+          <p>Invite family members with role-based access — owners, heads, members, and viewers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section section-alt" id="how-it-works">
+    <div class="container">
+      <div class="section-title">
+        <h2>Get Started in Minutes</h2>
+        <p>Three simple steps to take control of your family's finances.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Create Your Family</h3>
+          <p>Sign up and create your family workspace. Choose a plan that fits your needs.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Invite Members</h3>
+          <p>Invite your family members with secure email invitations and assign roles.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Start Tracking</h3>
+          <p>Add income, log expenses, set budgets, and watch your finances come together.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-title">
+        <h2>Simple, Transparent Pricing</h2>
+        <p>Start free and upgrade when your family needs more.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Free</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Perfect for getting started</p>
+          <div class="price">₹0 <span>/month</span></div>
+          <ul class="pricing-features">
+            <li>Up to 3 family members</li>
+            <li>Basic income & expense tracking</li>
+            <li>5 budget categories</li>
+            <li>Monthly reports</li>
+            <li>Email support</li>
+          </ul>
+          <a href="/register" class="btn btn-outline">Get Started</a>
+        </div>
+        <div class="pricing-card featured">
+          <h3>Pro</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">For growing families</p>
+          <div class="price">₹299 <small>/month</small></div>
+          <ul class="pricing-features">
+            <li>Unlimited family members</li>
+            <li>All finance modules</li>
+            <li>Unlimited budgets</li>
+            <li>PDF & Excel exports</li>
+            <li>Investment tracking</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="/register" class="btn btn-primary">Start Free Trial</a>
+        </div>
+        <div class="pricing-card">
+          <h3>Enterprise</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">For large families & groups</p>
+          <div class="price">₹799 <small>/month</small></div>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>Multiple workspaces</li>
+            <li>Advanced analytics</li>
+            <li>Custom categories</li>
+            <li>Dedicated support</li>
+            <li>API access</li>
+          </ul>
+          <a href="/register" class="btn btn-outline">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section section-dark" id="testimonials">
+    <div class="container">
+      <div class="section-title">
+        <h2>Loved by Families</h2>
+        <p>See what families are saying about Family Finance Manager.</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <p>"Finally, a finance app that works for the whole family. We can all see our budgets and track spending together."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">R</div>
+            <div>
+              <div class="testimonial-name">Rajesh Kumar</div>
+              <div class="testimonial-role">Family Head, Delhi</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p>"The EMI tracker and investment modules are game changers. We've never been more organized with our finances."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">P</div>
+            <div>
+              <div class="testimonial-name">Priya Sharma</div>
+              <div class="testimonial-role">Member, Mumbai</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <p>"Love the role-based access. My kids can view but not edit, and we can all contribute to savings goals."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">A</div>
+            <div>
+              <div class="testimonial-name">Anita Patel</div>
+              <div class="testimonial-role">Owner, Bangalore</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2>Start Managing Your Family's Finances Today</h2>
+      <p>Join thousands of families who are taking control of their financial future. Free forever — no credit card required.</p>
+      <a href="/register" class="btn btn-white">Create Your Family Account</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo" style="color:#f1f5f9;">
+            <div class="logo-icon">FF</div>
+            Family Finance
+          </div>
+          <p>A complete financial management platform for modern families. Track income, expenses, budgets, and investments — all in one secure workspace.</p>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 Family Finance Manager. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

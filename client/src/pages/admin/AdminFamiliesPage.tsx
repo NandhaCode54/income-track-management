@@ -7,9 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Search, Home } from 'lucide-react';
+import { Search, Home, AlertTriangle, RefreshCw } from 'lucide-react';
 import { ROLE_LABELS } from '@/constants/permissions';
 import type { UserRole } from '@/types/auth.types';
+
+const PLAN_BADGE_VARIANT: Record<string, 'default' | 'success' | 'secondary' | 'warning'> = {
+  FREE: 'secondary',
+  PRO: 'default',
+  FAMILY: 'success',
+  ENTERPRISE: 'warning',
+};
 
 const AdminFamiliesPage = () => {
   const [page, setPage] = useState(1);
@@ -30,6 +37,22 @@ const AdminFamiliesPage = () => {
     setPage(1);
     setSearch(searchInput);
   };
+
+  if (query.isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Family Management" description="View all family workspaces on the platform." />
+        <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-10 text-center">
+          <AlertTriangle className="h-10 w-10 text-destructive mb-3" />
+          <h3 className="text-lg font-semibold text-destructive">Failed to load families</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Something went wrong while fetching family data.</p>
+          <Button variant="outline" className="mt-4" onClick={() => query.refetch()}>
+            <RefreshCw className="mr-2 h-4 w-4" /> Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -58,8 +81,16 @@ const AdminFamiliesPage = () => {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {items.length === 0 && !query.isLoading && (
+      {query.isLoading && (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+          ))}
+        </div>
+      )}
+
+      {!query.isLoading && items.length === 0 && (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="p-10">
             <EmptyState
               icon={Home}
@@ -67,9 +98,11 @@ const AdminFamiliesPage = () => {
               description={search || plan ? 'Try a different filter.' : 'No families exist yet.'}
             />
           </div>
-        )}
+        </div>
+      )}
 
-        {items.length > 0 && (
+      {!query.isLoading && items.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -89,15 +122,17 @@ const AdminFamiliesPage = () => {
                     <td className="px-4 py-3">
                       <div>
                         <p className="font-medium">{family.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {family.members.slice(0, 3).map((m) => `${m.user.firstName} (${ROLE_LABELS[m.role as UserRole] ?? m.role})`).join(', ')}
-                          {family.members.length > 3 && ` +${family.members.length - 3}`}
-                        </p>
+                        {family.members.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {family.members.slice(0, 3).map((m) => `${m.user.firstName} (${ROLE_LABELS[m.role as UserRole] ?? m.role})`).join(', ')}
+                            {family.members.length > 3 && ` +${family.members.length - 3}`}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{family.code}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={family.subscription?.plan === 'FREE' ? 'muted' : 'default'}>
+                      <Badge variant={PLAN_BADGE_VARIANT[family.tenant.plan] ?? 'default'}>
                         {family.tenant.plan}
                       </Badge>
                     </td>
@@ -112,8 +147,8 @@ const AdminFamiliesPage = () => {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {meta && meta.total > 0 && (
         <Pagination meta={meta} onPageChange={setPage} label="families" />

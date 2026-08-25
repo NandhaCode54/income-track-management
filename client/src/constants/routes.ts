@@ -34,4 +34,5 @@ export const ROUTES = {
   ADMIN_FAMILIES: '/admin/families',
   ADMIN_SUBSCRIPTIONS: '/admin/subscriptions',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
+  ADMIN_ANNOUNCEMENTS: '/admin/announcements',
 } as const;
