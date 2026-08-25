@@ -18,6 +18,7 @@ import { chitFundRoutes } from '../modules/chit-fund/chit-fund.routes';
 import { notificationRoutes } from '../modules/notifications/notification.routes';
 import { reportRoutes } from '../modules/reports/reports.routes';
 import { insightRoutes } from '../modules/insights/insights.routes';
+import { adminRoutes } from '../modules/admin/admin.routes';
 
 const router = Router();
 
@@ -43,5 +44,6 @@ router.use('/portfolio', portfolioRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/insights', insightRoutes);
+router.use('/admin', adminRoutes);
 
 export const apiRoutes = router;

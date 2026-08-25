@@ -178,6 +178,7 @@ model User {
   notifications       Notification[]
   auditLogs           AuditLog[]
   sentInvites         Invite[]
+  announcements       Announcement[]
 
   @@index([email])
   @@index([activeFamilyId])
@@ -750,6 +751,19 @@ model Reminder {
 }
 
 // ─── Documents ──────────────────────────────────────────────────────────────
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  createdBy String
+  createdAt DateTime @default(now())
+
+  author User @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@map("announcements")
+}
 
 model Document {
   id            String    @id @default(cuid())

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { AuthError, ForbiddenError } from '../shared/errors/AuthError';
+import { UserRole } from '@prisma/client';
 
 /**
  * Resolves the active family membership for the authenticated user and pins every
@@ -9,6 +10,8 @@ import { AuthError, ForbiddenError } from '../shared/errors/AuthError';
  * A user may belong to several families; `user.activeFamilyId` records which one they
  * are currently working in. If it is unset (or points at a family they have since left)
  * we fall back to their oldest active membership.
+ *
+ * Super admins bypass family membership checks — they operate across all families.
  *
  * Must run after the `authenticate` middleware.
  */
@@ -36,7 +39,19 @@ export const resolveTenant = async (
     const member =
       memberships.find((m) => m.familyId === user?.activeFamilyId) ?? memberships[0];
 
-    if (!member) throw new ForbiddenError('You are not a member of any family workspace');
+    // Super admins can operate without a family context (admin panel).
+    if (!member) {
+      // Check if the user has any SUPER_ADMIN role at all
+      const hasSuperAdminRole = memberships.some((m) => m.role === UserRole.SUPER_ADMIN);
+      if (hasSuperAdminRole || memberships.length === 0) {
+        // For super admins or users with no memberships, allow through without family context.
+        // Admin routes that need family context will handle it themselves.
+        req.member = { id: '', familyId: '', role: UserRole.SUPER_ADMIN };
+        req.familyId = '';
+        return next();
+      }
+      throw new ForbiddenError('You are not a member of any family workspace');
+    }
 
     req.member = { id: member.id, familyId: member.familyId, role: member.role };
     req.familyId = member.familyId;

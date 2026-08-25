@@ -121,6 +121,10 @@ export const MSG = {
   NOTIFICATIONS_READ: 'Notification marked as read.',
   NOTIFICATIONS_ALL_READ: 'All notifications marked as read.',
 
+  // Admin
+  ADMIN_USER_STATUS_UPDATED: 'User status updated.',
+  ADMIN_ANNOUNCEMENT_CREATED: 'Announcement created.',
+
   // Generic CRUD
   CREATED: 'Created successfully.',
   UPDATED: 'Updated successfully.',

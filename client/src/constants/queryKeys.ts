@@ -79,6 +79,11 @@ export const QK = {
 
   // Admin
   ADMIN_USERS: ['admin', 'users'],
+  ADMIN_USER_DETAIL: (id: string) => ['admin', 'users', id],
   ADMIN_FAMILIES: ['admin', 'families'],
-  AUDIT_LOGS: ['audit-logs'],
+  ADMIN_FAMILY_DETAIL: (id: string) => ['admin', 'families', id],
+  ADMIN_SUBSCRIPTIONS: ['admin', 'subscriptions'],
+  ADMIN_AUDIT_LOGS: ['admin', 'audit-logs'],
+  ADMIN_ANALYTICS: ['admin', 'analytics'],
+  ADMIN_ANNOUNCEMENTS: ['admin', 'announcements'],
 } as const;

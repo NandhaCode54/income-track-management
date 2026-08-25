@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ROUTES } from '@/constants/routes';
+import { usePermission } from '@/hooks/usePermission';
 import {
   LayoutDashboard, TrendingUp, CreditCard, PiggyBank, Target,
   Calendar, Receipt, Home, GraduationCap, Coins, BarChart3,
   Bell, Users, Settings, TrendingDown, Briefcase, Landmark,
+  Shield,
 } from 'lucide-react';
 
 const navItems = [
@@ -30,6 +32,8 @@ const bottomItems = [
   { label: 'Settings', icon: Settings, to: ROUTES.SETTINGS },
 ];
 
+const adminItem = { label: 'Admin Panel', icon: Shield, to: ROUTES.ADMIN };
+
 interface NavItemDef { label: string; icon: React.ElementType; to: string }
 const NavItem = ({ item }: { item: NavItemDef }) => (
   <NavLink
@@ -49,33 +53,38 @@ const NavItem = ({ item }: { item: NavItemDef }) => (
   </NavLink>
 );
 
-const Sidebar = () => (
-  <aside className="flex h-full w-64 flex-col bg-sidebar">
-    {/* Logo */}
-    <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-        <span className="text-sm font-bold text-white">FF</span>
-      </div>
-      <div>
-        <p className="text-sm font-semibold text-sidebar-foreground">Family Finance</p>
-        <p className="text-xs text-sidebar-foreground/50">Manager</p>
-      </div>
-    </div>
+const Sidebar = () => {
+  const { can } = usePermission();
 
-    {/* Main nav */}
-    <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-      {navItems.map((item) => (
-        <NavItem key={item.to} item={item} />
-      ))}
-    </nav>
+  return (
+    <aside className="flex h-full w-64 flex-col bg-sidebar">
+      {/* Logo */}
+      <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+          <span className="text-sm font-bold text-white">FF</span>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-sidebar-foreground">Family Finance</p>
+          <p className="text-xs text-sidebar-foreground/50">Manager</p>
+        </div>
+      </div>
 
-    {/* Bottom nav */}
-    <div className="border-t border-sidebar-border p-3 space-y-1">
-      {bottomItems.map((item) => (
-        <NavItem key={item.to} item={item} />
-      ))}
-    </div>
-  </aside>
-);
+      {/* Main nav */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {navItems.map((item) => (
+          <NavItem key={item.to} item={item} />
+        ))}
+      </nav>
+
+      {/* Bottom nav */}
+      <div className="border-t border-sidebar-border p-3 space-y-1">
+        {bottomItems.map((item) => (
+          <NavItem key={item.to} item={item} />
+        ))}
+        {can('ADMIN_ACCESS') && <NavItem item={adminItem} />}
+      </div>
+    </aside>
+  );
+};
 
 export default Sidebar;

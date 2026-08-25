@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { safeRedirect } from '@/lib/redirect';
 import AppLayout from '@/components/layout/AppLayout';
 import AuthLayout from '@/components/layout/AuthLayout';
+import AdminGuard from '@/components/admin/AdminGuard';
 import LoadingScreen from '@/components/common/LoadingScreen';
 
 // Auth pages
@@ -33,6 +34,14 @@ const NotificationsPage = lazy(() => import('@/pages/notifications/Notifications
 const FamilyPage = lazy(() => import('@/pages/family/FamilyPage'));
 const AcceptInvitePage = lazy(() => import('@/pages/family/AcceptInvitePage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
+
+// Admin pages
+const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
+const AdminFamiliesPage = lazy(() => import('@/pages/admin/AdminFamiliesPage'));
+const AdminSubscriptionsPage = lazy(() => import('@/pages/admin/AdminSubscriptionsPage'));
+const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage'));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -91,6 +100,23 @@ const router = createBrowserRouter([
       { path: ROUTES.NOTIFICATIONS, element: wrap(<NotificationsPage />) },
       { path: ROUTES.FAMILY, element: wrap(<FamilyPage />) },
       { path: ROUTES.SETTINGS, element: wrap(<SettingsPage />) },
+    ],
+  },
+  {
+    element: (
+      <ProtectedRoute>
+        <AdminGuard>
+          <AppLayout />
+        </AdminGuard>
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: ROUTES.ADMIN, element: wrap(<AdminPage />) },
+      { path: '/admin/dashboard', element: wrap(<AdminDashboardPage />) },
+      { path: ROUTES.ADMIN_USERS, element: wrap(<AdminUsersPage />) },
+      { path: ROUTES.ADMIN_FAMILIES, element: wrap(<AdminFamiliesPage />) },
+      { path: ROUTES.ADMIN_SUBSCRIPTIONS, element: wrap(<AdminSubscriptionsPage />) },
+      { path: ROUTES.ADMIN_AUDIT_LOGS, element: wrap(<AdminAuditLogsPage />) },
     ],
   },
   // Standalone: an invitee may land here signed in *or* signed out.
