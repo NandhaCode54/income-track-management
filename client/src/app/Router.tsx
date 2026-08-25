@@ -34,6 +34,7 @@ const NotificationsPage = lazy(() => import('@/pages/notifications/Notifications
 const FamilyPage = lazy(() => import('@/pages/family/FamilyPage'));
 const AcceptInvitePage = lazy(() => import('@/pages/family/AcceptInvitePage'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
+const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage'));
 
 // Admin pages
 const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
@@ -100,6 +101,7 @@ const router = createBrowserRouter([
       { path: ROUTES.NOTIFICATIONS, element: wrap(<NotificationsPage />) },
       { path: ROUTES.FAMILY, element: wrap(<FamilyPage />) },
       { path: ROUTES.SETTINGS, element: wrap(<SettingsPage />) },
+      { path: ROUTES.SUBSCRIPTION, element: wrap(<SubscriptionPage />) },
     ],
   },
   {

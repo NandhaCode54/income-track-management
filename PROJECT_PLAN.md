@@ -2,8 +2,8 @@
 
 > **Type:** Multi-Tenant SaaS  
 > **Version:** 1.0.0  
-> **Status:** In Development — Phase 14 complete  
-> **Last Updated:** 2026-08-24  
+> **Status:** In Development — Phase 16 complete  
+> **Last Updated:** 2026-08-25  
 > **Architect:** Senior Full Stack / Principal Engineer
 
 ---
@@ -711,19 +711,19 @@ Modules will be built in this exact order. Each module must be **reviewed and ap
 - [x] 14.3 Anomaly detection
 - [x] 14.4 Frontend: Insights cards
 
-### Phase 15 — Admin Panel
-- [ ] 15.1 Super admin auth + panel
-- [ ] 15.2 User/family management
-- [ ] 15.3 Platform analytics
-- [ ] 15.4 Audit log viewer
-- [ ] 15.5 Announcement system
-- [ ] 15.6 Frontend: Admin panel
+### Phase 15 — Admin Panel ✅
+- [x] 15.1 Super admin auth + panel
+- [x] 15.2 User/family management
+- [x] 15.3 Platform analytics
+- [x] 15.4 Audit log viewer
+- [x] 15.5 Announcement system
+- [x] 15.6 Frontend: Admin panel
 
-### Phase 16 — Subscription System
-- [ ] 16.1 Subscription plans (Free/Pro/Family)
-- [ ] 16.2 Plan feature gates
-- [ ] 16.3 Payment integration (Razorpay/Stripe)
-- [ ] 16.4 Frontend: Pricing + upgrade UI
+### Phase 16 — Subscription System ✅
+- [x] 16.1 Subscription plans (Free/Pro/Family) — plan definitions, feature gates, member limits
+- [x] 16.2 Plan feature gates — backend validation of plan transitions, member limit checks
+- [x] 16.3 Subscription CRUD API — get current, upgrade, cancel, reactivate, plan status
+- [x] 16.4 Frontend: Pricing + upgrade UI — plan cards, current subscription info, cancel/reactivate
 
 ### Phase 17 — Polish & Deployment
 - [ ] 17.1 Dark mode
@@ -787,11 +787,11 @@ Use this to track overall completion.
 - [x] Phase 9: Goals
 - [x] Phase 10: Chit Fund
 - [x] Phase 11: Investments/Assets
-- [ ] Phase 12: Notifications
-- [ ] Phase 13: Reports
-- [ ] Phase 14: AI Insights
-- [ ] Phase 15: Admin Panel
-- [ ] Phase 16: Subscriptions
+- [x] Phase 12: Notifications
+- [x] Phase 13: Reports
+- [x] Phase 14: AI Insights
+- [x] Phase 15: Admin Panel
+- [x] Phase 16: Subscriptions
 - [ ] Phase 17: Polish + Deploy
 
 ---

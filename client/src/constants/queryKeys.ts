@@ -77,6 +77,11 @@ export const QK = {
   // Insights
   INSIGHTS: ['insights'],
 
+  // Subscription
+  SUBSCRIPTION: ['subscription'],
+  SUBSCRIPTION_PLANS: ['subscription', 'plans'],
+  SUBSCRIPTION_STATUS: ['subscription', 'status'],
+
   // Admin
   ADMIN_USERS: ['admin', 'users'],
   ADMIN_USER_DETAIL: (id: string) => ['admin', 'users', id],

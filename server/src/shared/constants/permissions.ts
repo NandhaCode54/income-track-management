@@ -29,6 +29,9 @@ export const PERMISSIONS = {
   // Settings
   SETTINGS_MANAGE: [UserRole.TENANT_OWNER, UserRole.FAMILY_HEAD],
 
+  // Subscription
+  SUBSCRIPTION_MANAGE: [UserRole.TENANT_OWNER],
+
   // Admin
   ADMIN_ACCESS: [UserRole.SUPER_ADMIN],
 } as const;

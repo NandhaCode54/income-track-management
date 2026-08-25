@@ -121,6 +121,15 @@ export const MSG = {
   NOTIFICATIONS_READ: 'Notification marked as read.',
   NOTIFICATIONS_ALL_READ: 'All notifications marked as read.',
 
+  // Subscription
+  SUBSCRIPTION_FETCHED: 'Subscription fetched.',
+  SUBSCRIPTION_UPGRADED: 'Plan upgraded successfully.',
+  SUBSCRIPTION_CANCELLED: 'Subscription cancelled.',
+  SUBSCRIPTION_REACTIVATED: 'Subscription reactivated.',
+  SUBSCRIPTION_PLANS_FETCHED: 'Plans fetched.',
+  SUBSCRIPTION_ALREADY_ACTIVE: 'You are already on this plan.',
+  SUBSCRIPTION_DOWNGRADE_NOT_ALLOWED: 'Downgrading is not allowed. Cancel and wait for the current period to end.',
+
   // Admin
   ADMIN_USER_STATUS_UPDATED: 'User status updated.',
   ADMIN_ANNOUNCEMENT_CREATED: 'Announcement created.',

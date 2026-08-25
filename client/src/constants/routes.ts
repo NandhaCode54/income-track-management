@@ -26,6 +26,7 @@ export const ROUTES = {
   NOTIFICATIONS: '/notifications',
   FAMILY: '/family',
   SETTINGS: '/settings',
+  SUBSCRIPTION: '/subscription',
 
   // Admin
   ADMIN: '/admin',

@@ -6,7 +6,7 @@ import {
   LayoutDashboard, TrendingUp, CreditCard, PiggyBank, Target,
   Calendar, Receipt, Home, GraduationCap, Coins, BarChart3,
   Bell, Users, Settings, TrendingDown, Briefcase, Landmark,
-  Shield,
+  Shield, Crown,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,6 +29,7 @@ const navItems = [
 const bottomItems = [
   { label: 'Notifications', icon: Bell, to: ROUTES.NOTIFICATIONS },
   { label: 'Family', icon: Users, to: ROUTES.FAMILY },
+  { label: 'Subscription', icon: Crown, to: ROUTES.SUBSCRIPTION },
   { label: 'Settings', icon: Settings, to: ROUTES.SETTINGS },
 ];
 

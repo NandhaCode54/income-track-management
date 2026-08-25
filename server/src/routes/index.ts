@@ -19,6 +19,7 @@ import { notificationRoutes } from '../modules/notifications/notification.routes
 import { reportRoutes } from '../modules/reports/reports.routes';
 import { insightRoutes } from '../modules/insights/insights.routes';
 import { adminRoutes } from '../modules/admin/admin.routes';
+import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
 
 const router = Router();
 
@@ -45,5 +46,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/insights', insightRoutes);
 router.use('/admin', adminRoutes);
+router.use('/subscriptions', subscriptionRoutes);
 
 export const apiRoutes = router;
