@@ -77,6 +77,9 @@ export const QK = {
   // Insights
   INSIGHTS: ['insights'],
 
+  // Settings
+  SETTINGS: ['settings'],
+
   // Subscription
   SUBSCRIPTION: ['subscription'],
   SUBSCRIPTION_PLANS: ['subscription', 'plans'],

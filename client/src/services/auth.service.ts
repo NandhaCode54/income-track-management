@@ -53,4 +53,14 @@ export const authApi = {
     const { data } = await api.post<ApiEnvelope<never>>('/auth/reset-password', payload);
     return data.message;
   },
+
+  async updateProfile(payload: { firstName: string; lastName: string; phone?: string }): Promise<{ user: User }> {
+    const { data } = await api.patch<ApiEnvelope<{ user: User }>>('/auth/me', payload);
+    return data.data as { user: User };
+  },
+
+  async changePassword(payload: { currentPassword: string; newPassword: string }): Promise<string> {
+    const { data } = await api.patch<ApiEnvelope<never>>('/auth/change-password', payload);
+    return data.message;
+  },
 };
