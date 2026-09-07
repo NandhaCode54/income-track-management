@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'ffm-auth',
-      partialize: (state) => ({ user: state.user, member: state.member, accessToken: state.accessToken, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ user: state.user, member: state.member, isAuthenticated: state.isAuthenticated }),
     },
   ),
 );

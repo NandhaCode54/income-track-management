@@ -32,7 +32,7 @@ export type ContributionRow = GoalRow['contributions'][number];
 export type ContributeResult =
   | { outcome: 'not-found' }
   | { outcome: 'already-complete' }
-  | { outcome: 'ok'; goal: GoalRow };
+  | { outcome: 'ok'; goal: GoalRow; justCompleted: boolean };
 
 const listWhere = (familyId: string, query: ListGoalsQuery): Prisma.GoalWhereInput => ({
   familyId,
@@ -106,10 +106,10 @@ export const goalsRepository = {
    * displayed progress clamps, never a stored figure. Completion is derived from
    * the post-increment value the update returns.
    *
-   * Residual race (accepted, same philosophy as the budget NULL-unique gap):
-   * two transactions can both observe `isCompleted = false` before either
-   * commits. Both increments still apply; the worst case is `completedAt`
-   * written twice with near-identical stamps.
+   * Completion can only be flipped by one of two racing contributions: the
+   * `updateMany` that sets the flag is conditional on it still being unset, so
+   * whichever transaction lands first reports `justCompleted = true` and the
+   * other sees `count === 0` — the notification fires exactly once.
    */
   async contribute(
     familyId: string,
@@ -118,7 +118,7 @@ export const goalsRepository = {
   ): Promise<ContributeResult> {
     const amount = new Prisma.Decimal(input.amount.toFixed(2));
 
-    const goal = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const existing = await tx.goal.findFirst({
         where: { id: goalId, familyId },
         select: { id: true, isCompleted: true },
@@ -141,9 +141,10 @@ export const goalsRepository = {
       const updated = await tx.goal.update({
         where: { id: goalId },
         data: { savedAmount: { increment: amount } },
-        select: goalSelect,
+        select: { id: true, isCompleted: true, targetAmount: true, savedAmount: true },
       });
 
+      let justCompleted = false;
       // Decimal.js overloads valueOf to return a *string*, so relational
       // operators would compare lexicographically — always through its methods.
       if (
@@ -151,18 +152,24 @@ export const goalsRepository = {
         updated.targetAmount.greaterThan(0) &&
         updated.savedAmount.comparedTo(updated.targetAmount) >= 0
       ) {
-        return tx.goal.update({
-          where: { id: goalId },
+        // The completion update is itself conditional on the flag being unset,
+        // so two overlapping contributions that both cross the line resolve to
+        // exactly one `count === 1` — hence one notification, not a skid.
+        const completion = await tx.goal.updateMany({
+          where: { id: goalId, isCompleted: false },
           data: { isCompleted: true, completedAt: new Date() },
-          select: goalSelect,
         });
+        justCompleted = completion.count === 1;
       }
 
-      return updated;
+      // A concurrent completion may have landed after our increment update, so
+      // re-read to return the goal in its committed (current) state.
+      const goal = await tx.goal.findFirst({ where: { id: goalId }, select: goalSelect });
+      return goal ? { goal, justCompleted } : null;
     });
 
-    if (!goal) return { outcome: 'not-found' };
-    if ('alreadyComplete' in goal) return { outcome: 'already-complete' };
-    return { outcome: 'ok', goal };
+    if (!result) return { outcome: 'not-found' };
+    if ('alreadyComplete' in result) return { outcome: 'already-complete' };
+    return { outcome: 'ok', goal: result.goal, justCompleted: result.justCompleted };
   },
 };

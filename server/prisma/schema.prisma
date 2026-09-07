@@ -336,18 +336,19 @@ model FamilySettings {
 // ─── Income ─────────────────────────────────────────────────────────────────
 
 model Income {
-  id          String     @id @default(cuid())
-  familyId    String
-  memberId    String
-  type        IncomeType
-  amount      Decimal    @db.Decimal(12, 2)
-  description String?
-  date        DateTime
-  isRecurring Boolean    @default(false)
-  frequency   Frequency? @default(MONTHLY)
-  notes       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  familyId          String
+  memberId          String
+  type              IncomeType
+  amount            Decimal    @db.Decimal(12, 2)
+  description       String?
+  date              DateTime
+  isRecurring       Boolean    @default(false)
+  frequency         Frequency? @default(MONTHLY)
+  notes             String?
+  recurringSourceId String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   family      Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
   member      FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
@@ -355,6 +356,8 @@ model Income {
   @@index([familyId])
   @@index([memberId])
   @@index([date])
+  @@index([recurringSourceId])
+  @@unique([recurringSourceId, date])
   @@map("incomes")
 }
 
@@ -383,20 +386,21 @@ model ExpenseCategory {
 }
 
 model Expense {
-  id            String    @id @default(cuid())
-  familyId      String
-  memberId      String
-  categoryId    String?
-  amount        Decimal   @db.Decimal(12, 2)
-  description   String
-  date          DateTime
-  isRecurring   Boolean   @default(false)
-  frequency     Frequency? @default(MONTHLY)
-  tags          String[]
-  notes         String?
-  paymentMethod String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  familyId          String
+  memberId          String
+  categoryId        String?
+  amount            Decimal   @db.Decimal(12, 2)
+  description       String
+  date              DateTime
+  isRecurring       Boolean   @default(false)
+  frequency         Frequency? @default(MONTHLY)
+  tags              String[]
+  notes             String?
+  paymentMethod     String?
+  recurringSourceId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   family        Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
   member        FamilyMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
@@ -407,6 +411,8 @@ model Expense {
   @@index([memberId])
   @@index([categoryId])
   @@index([date])
+  @@index([recurringSourceId])
+  @@unique([recurringSourceId, date])
   @@map("expenses")
 }
 
@@ -586,24 +592,27 @@ model Rent {
 // ─── Bills ──────────────────────────────────────────────────────────────────
 
 model Bill {
-  id            String        @id @default(cuid())
-  familyId      String
-  type          BillType
-  name          String
-  providerName  String?
-  amount        Decimal       @db.Decimal(12, 2)
-  dueDate       DateTime
-  paidDate      DateTime?
-  status        PaymentStatus @default(PENDING)
-  isRecurring   Boolean       @default(true)
-  frequency     Frequency     @default(MONTHLY)
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id               String        @id @default(cuid())
+  familyId         String
+  type             BillType
+  name             String
+  providerName     String?
+  amount           Decimal       @db.Decimal(12, 2)
+  dueDate          DateTime
+  paidDate         DateTime?
+  status           PaymentStatus @default(PENDING)
+  isRecurring      Boolean       @default(true)
+  frequency        Frequency     @default(MONTHLY)
+  recurringSourceId String?
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  family           Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
 
+  @@unique([recurringSourceId, dueDate])
   @@index([familyId])
+  @@index([recurringSourceId])
   @@map("bills")
 }
 

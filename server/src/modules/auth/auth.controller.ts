@@ -18,8 +18,11 @@ const contextFrom = (req: Request): RequestContext => ({
 export const authController = {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await authService.register(req.body);
-      sendCreated(res, MSG.AUTH_REGISTER_SUCCESS);
+      const { verificationEmailSent } = await authService.register(req.body);
+      sendCreated(res, MSG.AUTH_REGISTER_SUCCESS, {
+        verificationEmailSent,
+        resendPath: '/auth/resend-verification',
+      });
     } catch (err) {
       next(err);
     }

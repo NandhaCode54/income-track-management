@@ -43,8 +43,8 @@ export const resolveTenant = async (
     if (!member) {
       // Check if the user has any SUPER_ADMIN role at all
       const hasSuperAdminRole = memberships.some((m) => m.role === UserRole.SUPER_ADMIN);
-      if (hasSuperAdminRole || memberships.length === 0) {
-        // For super admins or users with no memberships, allow through without family context.
+      if (hasSuperAdminRole) {
+        // For super admins with an explicit SUPER_ADMIN role, allow through without family context.
         // Admin routes that need family context will handle it themselves.
         req.member = { id: '', familyId: '', role: UserRole.SUPER_ADMIN };
         req.familyId = '';

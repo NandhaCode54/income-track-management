@@ -30,9 +30,13 @@ import { activeMemberUserIds, alreadyNotified, describeWhen } from './reminder.h
 const formatMoney = (value: unknown): string =>
   Number(value).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 
-/** PARTIAL means some money went in but the obligation is still open. */
-const UNSETTLED: PaymentStatus[] = [PaymentStatus.PENDING, PaymentStatus.OVERDUE];
-const SETTLED: PaymentStatus[] = [PaymentStatus.PAID, PaymentStatus.PARTIAL, PaymentStatus.WAIVED];
+/** PARTIAL means some money went in but an obligation is still open — it stays unsettled. */
+const UNSETTLED: PaymentStatus[] = [
+  PaymentStatus.PENDING,
+  PaymentStatus.OVERDUE,
+  PaymentStatus.PARTIAL,
+];
+const SETTLED: PaymentStatus[] = [PaymentStatus.PAID, PaymentStatus.WAIVED];
 
 const NOTIFICATION_TYPES = [
   NotificationType.BILL_DUE,

@@ -15,9 +15,9 @@ interface ApiEnvelope<T> {
 }
 
 export const authApi = {
-  async register(payload: RegisterPayload): Promise<string> {
-    const { data } = await api.post<ApiEnvelope<never>>('/auth/register', payload);
-    return data.message;
+  async register(payload: RegisterPayload): Promise<{ message: string; verificationEmailSent: boolean }> {
+    const { data } = await api.post<ApiEnvelope<{ verificationEmailSent: boolean }>>('/auth/register', payload);
+    return { message: data.message, verificationEmailSent: data.data?.verificationEmailSent ?? true };
   },
 
   async login(payload: LoginPayload): Promise<AuthResponse> {

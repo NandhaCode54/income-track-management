@@ -21,6 +21,8 @@ import { NotFoundError } from '../../shared/errors/NotFoundError';
 import { MSG } from '../../shared/constants/messages';
 import { env } from '../../config/env';
 import { logger } from '../../shared/utils/logger';
+import { subscriptionRepository } from '../subscription/subscription.repository';
+import { ValidationError } from '../../shared/errors/ValidationError';
 
 type MemberRow = Awaited<ReturnType<typeof familyRepository.listMembers>>[number];
 type InviteRow = Awaited<ReturnType<typeof familyRepository.listPendingInvites>>[number];
@@ -190,6 +192,25 @@ export const familyService = {
       throw new AppError(MSG.FAMILY_ALREADY_MEMBER, 409, 'ALREADY_MEMBER');
     }
 
+    // A seat is claimed the moment an invite is sent (the invited email could
+    // accept tomorrow), so reject when the family is at or beyond its plan's
+    // member limit. Pending invites count towards that limit too, otherwise a
+    // family at the cap could pile up invites and blow past its seats when they
+    // all accept. This mirrors the guard used on plan downgrades.
+    const { current, limit } =
+      await subscriptionRepository.isWithinMemberLimit(actor.familyId);
+    if (limit !== null) {
+      const pendingInvites = await familyRepository.listPendingInvites(actor.familyId);
+      const seatsInUse = current + pendingInvites.length;
+      if (seatsInUse >= limit) {
+        throw new ValidationError(MSG.VALIDATION_ERROR, {
+          members: [
+            `Your plan allows a maximum of ${limit} active member${limit === 1 ? '' : 's'} (${seatsInUse} in use).`,
+          ],
+        });
+      }
+    }
+
     const token = generateSecureToken();
     const invite = await familyRepository.upsertInvite({
       familyId: actor.familyId,
@@ -271,6 +292,23 @@ export const familyService = {
     const existing = await familyRepository.findMembershipByUserId(invite.familyId, user.id);
     if (existing?.isActive) {
       throw new AppError(MSG.FAMILY_ALREADY_MEMBER, 409, 'ALREADY_MEMBER');
+    }
+
+    // The seat guard is re-checked at accept time, not just when the invite is
+    // issued — a downgrade, or another invite accepted meanwhile, could have
+    // moved the family to its cap. This invite is still pending here and becomes
+    // this acceptee's active seat, so counting it keeps the pre/post-accept math
+    // identical to the guard `inviteMember` runs.
+    const { current, limit } = await subscriptionRepository.isWithinMemberLimit(invite.familyId);
+    if (limit !== null) {
+      const pendingInvites = await familyRepository.listPendingInvites(invite.familyId);
+      if (current + pendingInvites.length >= limit) {
+        throw new ValidationError(MSG.VALIDATION_ERROR, {
+          members: [
+            `This family is at its ${limit}-member plan limit. Ask the family owner to upgrade before accepting.`,
+          ],
+        });
+      }
     }
 
     await familyRepository.acceptInvite({

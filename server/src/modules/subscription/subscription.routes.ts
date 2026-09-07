@@ -13,36 +13,36 @@ router.use(authenticate, resolveTenant);
 
 router.get(
   '/',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   subscriptionController.getCurrent,
 );
 router.get(
   '/plans',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   subscriptionController.getPlans,
 );
 router.get(
   '/status',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   subscriptionController.getPlanStatus,
 );
 router.post(
   '/upgrade',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   validate(upgradePlanSchema),
   audit({ action: AuditAction.UPDATE, entity: 'Subscription' }),
   subscriptionController.upgrade,
 );
 router.post(
   '/cancel',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   validate(cancelSubscriptionSchema),
   audit({ action: AuditAction.UPDATE, entity: 'Subscription' }),
   subscriptionController.cancel,
 );
 router.post(
   '/reactivate',
-  requirePermission('SETTINGS_MANAGE'),
+  requirePermission('SUBSCRIPTION_MANAGE'),
   audit({ action: AuditAction.UPDATE, entity: 'Subscription' }),
   subscriptionController.reactivate,
 );

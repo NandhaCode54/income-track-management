@@ -16,6 +16,7 @@ import { toast } from '@/components/ui/toast';
 
 const RegisterPage = () => {
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [verificationEmailSent, setVerificationEmailSent] = useState(true);
   const [searchParams] = useSearchParams();
 
   // Carries an invite's ?redirect= through to the login link shown after signing up.
@@ -29,10 +30,25 @@ const RegisterPage = () => {
 
   const mutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: () => {
-      toast.success('Account created', 'Check your inbox to verify your email.');
+    onSuccess: ({ verificationEmailSent }) => {
+      setVerificationEmailSent(verificationEmailSent);
+      toast.success(
+        'Account created',
+        verificationEmailSent
+          ? 'Check your inbox to verify your email.'
+          : 'We could not send the verification email yet.',
+      );
     },
     onError: (error) => toast.error('Registration failed', getApiErrorMessage(error)),
+  });
+
+  const resendMutation = useMutation({
+    mutationFn: (email: string) => authApi.resendVerification(email),
+    onSuccess: (message) => {
+      setVerificationEmailSent(true);
+      toast.success('Email sent', message);
+    },
+    onError: (error) => toast.error('Could not resend', getApiErrorMessage(error)),
   });
 
   const onSubmit = (values: RegisterForm) => {
@@ -50,10 +66,30 @@ const RegisterPage = () => {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
           <p className="text-sm text-muted-foreground">
-            We&apos;ve sent a verification link to <strong>{registeredEmail}</strong>. Click the
-            link to activate your account.
+            {verificationEmailSent ? (
+              <>
+                We&apos;ve sent a verification link to <strong>{registeredEmail}</strong>. Click the
+                link to activate your account.
+              </>
+            ) : (
+              <>
+                Your account was created, but we couldn&apos;t deliver the verification email to{' '}
+                <strong>{registeredEmail}</strong>. You can resend it below.
+              </>
+            )}
           </p>
         </div>
+        {!verificationEmailSent && (
+          <Button
+            type="button"
+            className="w-full"
+            disabled={resendMutation.isPending}
+            onClick={() => resendMutation.mutate(registeredEmail)}
+          >
+            {resendMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            Resend verification email
+          </Button>
+        )}
         <Button asChild variant="outline" className="w-full">
           <Link to={loginHref}>Back to login</Link>
         </Button>

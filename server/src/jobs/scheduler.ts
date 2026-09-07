@@ -4,6 +4,7 @@ import { logger } from '../shared/utils/logger';
 import { budgetAlertTask } from './budget-alert.job';
 import { emiReminderTask } from './emi-reminder.job';
 import { paymentReminderTask } from './payment-reminder.job';
+import { recurringOccurrenceTask } from './recurring-occurrence.job';
 
 /**
  * The job registry.
@@ -28,6 +29,13 @@ interface Job {
 }
 
 const JOBS: Job[] = [
+  {
+    name: 'recurring-occurrence',
+    // 05:50 daily, ahead of the overdue/reminder sweeps so a just-materialised
+    // recurring bill can still be reminded about the same morning.
+    schedule: '50 5 * * *',
+    run: recurringOccurrenceTask,
+  },
   {
     name: 'emi-reminder',
     // 06:00 daily — early enough to act on, late enough not to arrive overnight.

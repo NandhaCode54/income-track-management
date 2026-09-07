@@ -22,6 +22,7 @@ import { AuthError } from '../../shared/errors/AuthError';
 import { NotFoundError } from '../../shared/errors/NotFoundError';
 import { MSG } from '../../shared/constants/messages';
 import { env } from '../../config/env';
+import { logger } from '../../shared/utils/logger';
 
 const toUserDto = (user: User): UserDto => ({
   id: user.id,
@@ -65,7 +66,7 @@ const issueTokens = async (
 };
 
 export const authService = {
-  async register(input: RegisterInput): Promise<void> {
+  async register(input: RegisterInput): Promise<{ verificationEmailSent: boolean }> {
     const existing = await authRepository.findUserByEmail(input.email);
     if (existing) {
       throw new AppError(MSG.DUPLICATE_EMAIL, 409, 'DUPLICATE_EMAIL');
@@ -90,7 +91,16 @@ export const authService = {
       user.firstName,
       buildVerificationLink(verificationToken),
     );
-    await sendEmail({ to: user.email, ...template });
+    let verificationEmailSent = true;
+    try {
+      await sendEmail({ to: user.email, ...template });
+    } catch (err) {
+      // A mail outage must not fail registration — the account is already created.
+      // The client surfaces a resend path via verificationEmailSent:false.
+      logger.warn('Verification email delivery failed', { email: user.email, error: err });
+      verificationEmailSent = false;
+    }
+    return { verificationEmailSent };
   },
 
   async login(input: LoginInput, ctx: RequestContext): Promise<AuthResult> {

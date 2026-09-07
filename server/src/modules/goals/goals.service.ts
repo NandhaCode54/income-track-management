@@ -17,9 +17,10 @@ import { toDto } from './goals.types';
 
 /**
  * A goal only crosses its target once — `contribute` rejects further
- * contributions on a completed goal — so "the returned goal is complete" is
- * exactly the completing contribution. That makes the event naturally
- * idempotent and lets the notification fire inline, no cron needed.
+ * contributions on a completed goal — and the completion write is conditional,
+ * so exactly one of two racing contributions reports `justCompleted`. That makes
+ * the event naturally idempotent and lets the notification fire inline, no cron
+ * needed.
  */
 const notifyGoalAchieved = async (
   familyId: string,
@@ -83,7 +84,7 @@ export const goalsService = {
       throw new ValidationError(MSG.VALIDATION_ERROR, { amount: [MSG.GOAL_ALREADY_COMPLETE] });
     }
 
-    if (result.goal.isCompleted) void notifyGoalAchieved(familyId, result.goal);
+    if (result.justCompleted) void notifyGoalAchieved(familyId, result.goal);
 
     return toDto(result.goal);
   },

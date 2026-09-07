@@ -180,3 +180,64 @@ export const runBudgetCheck = (context: BudgetCheckContext): void => {
     logger.warn('Budget check failed after an expense write', { error }),
   );
 };
+
+/**
+ * The daily sweep entry point (see `jobs/budget-alert.job`).
+ *
+ * Evaluates every budget line in the given month across **all** families and
+ * raises the same warning / exceeded notifications the request-time path does.
+ * Keeping it here — next to `checkBudgets` — means the two triggers share one
+ * spend definition (a parent's budget rolls up its children) and one dedupe
+ * key (the budget id), so they cannot disagree or double-fire.
+ */
+export const checkAllBudgets = async (month: number, year: number): Promise<number> => {
+  const { from, to } = periodRange({ year, month });
+
+  // Group spend per family so each family's budgets are measured against one
+  // consistent snapshot of the month's expenses.
+  const familyIds = [...new Set((await prisma.budget.findMany({
+    where: { month, year },
+    select: { familyId: true },
+  })).map((row) => row.familyId))];
+
+  let evaluated = 0;
+  for (const familyId of familyIds) {
+    const budgets = await budgetRepository.listForPeriod(familyId, month, year);
+    if (budgets.length === 0) continue;
+
+    const grouped = await expenseRepository.groupByCategory(familyId, from, to);
+
+    for (const budget of budgets) {
+      const rowsForCategory = budget.categoryId
+        ? grouped.filter(
+            (row) =>
+              row.categoryId === budget.categoryId ||
+              row.category?.parentId === budget.categoryId,
+          )
+        : grouped;
+
+      const spent =
+        Math.round(
+          rowsForCategory.reduce(
+            (sum, row) => sum + toNumber(row._sum.amount ?? new Prisma.Decimal(0)),
+            0,
+          ) * 100,
+        ) / 100;
+      const budgeted = toNumber(budget.amount);
+      const percentUsed = percentUsedOf(spent, budgeted);
+      const status = statusFor(percentUsed);
+
+      if (status === 'ON_TRACK') continue;
+      await notify(
+        budget,
+        status === 'OVER' ? NotificationType.BUDGET_EXCEEDED : NotificationType.BUDGET_WARNING,
+        spent,
+        budgeted,
+        Number.isFinite(percentUsed) ? percentUsed : 100,
+      );
+    }
+    evaluated += budgets.length;
+  }
+
+  return evaluated;
+};
