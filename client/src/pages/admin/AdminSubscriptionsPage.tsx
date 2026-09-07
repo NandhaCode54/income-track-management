@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminSubscriptions } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +39,7 @@ const AdminSubscriptionsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Subscriptions" description="View all family subscriptions." />
+      <PageHeader title="Subscriptions" description="View all family subscriptions." backButton={<BackButton to="/admin" />} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Select value={plan} onChange={(e) => { setPlan(e.target.value); setPage(1); }}>

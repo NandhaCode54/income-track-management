@@ -37,7 +37,7 @@ const AdminSidebar = () => {
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <aside className="flex h-full w-64 flex-col bg-sidebar">
+    <aside data-sidebar className="flex h-full w-64 flex-col bg-sidebar">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">

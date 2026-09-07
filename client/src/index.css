@@ -105,3 +105,8 @@
 ::-webkit-scrollbar-track { @apply bg-muted; }
 ::-webkit-scrollbar-thumb { @apply bg-muted-foreground/30 rounded-full; }
 ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/50; }
+
+/* Sidebar scrollbar — uses sidebar tokens so the thumb blends with the dark panel */
+[data-sidebar] ::-webkit-scrollbar-track { background: hsl(var(--sidebar-background)); }
+[data-sidebar] ::-webkit-scrollbar-thumb { background: hsl(var(--sidebar-foreground) / 0.15); }
+[data-sidebar] ::-webkit-scrollbar-thumb:hover { background: hsl(var(--sidebar-foreground) / 0.25); }

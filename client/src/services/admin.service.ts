@@ -36,6 +36,14 @@ export const adminApi = {
     return data.message;
   },
 
+  async updateMemberRole(userId: string, familyId: string, role: string): Promise<{ member: { id: string; role: string; family: { id: string; name: string } } }> {
+    const { data } = await api.patch<ApiEnvelope<{ member: { id: string; role: string; family: { id: string; name: string } } }>>(
+      `/admin/users/${userId}/families/${familyId}/role`,
+      { role },
+    );
+    return unwrap(data);
+  },
+
   // ─── Families ─────────────────────────────────────────────────────────────
 
   async listFamilies(

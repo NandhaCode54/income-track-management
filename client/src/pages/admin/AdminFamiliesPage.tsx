@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminFamilies } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -41,7 +42,7 @@ const AdminFamiliesPage = () => {
   if (query.isError) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Family Management" description="View all family workspaces on the platform." />
+        <PageHeader title="Family Management" description="View all family workspaces on the platform." backButton={<BackButton to="/admin" />} />
         <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-10 text-center">
           <AlertTriangle className="h-10 w-10 text-destructive mb-3" />
           <h3 className="text-lg font-semibold text-destructive">Failed to load families</h3>
@@ -56,7 +57,7 @@ const AdminFamiliesPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Family Management" description="View all family workspaces on the platform." />
+      <PageHeader title="Family Management" description="View all family workspaces on the platform." backButton={<BackButton to="/admin" />} />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 max-w-sm">

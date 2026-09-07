@@ -132,6 +132,7 @@ export const MSG = {
 
   // Admin
   ADMIN_USER_STATUS_UPDATED: 'User status updated.',
+  ADMIN_MEMBER_ROLE_UPDATED: 'Member role updated.',
   ADMIN_ANNOUNCEMENT_CREATED: 'Announcement created.',
 
   // Generic CRUD

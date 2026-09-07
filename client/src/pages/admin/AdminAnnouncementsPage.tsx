@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useAdminAnnouncements, useCreateAnnouncement } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Megaphone, Send } from 'lucide-react';
 import { toast } from '@/components/ui/toast';
-import { getApiErrorMessage } from '@/lib/api-error';
 
 const AdminAnnouncementsPage = () => {
   const { data: announcements, isLoading } = useAdminAnnouncements();
@@ -34,7 +34,7 @@ const AdminAnnouncementsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Announcements" description="Send platform-wide announcements to all users." />
+      <PageHeader title="Announcements" description="Send platform-wide announcements to all users." backButton={<BackButton to="/admin" />} />
 
       <Card>
         <CardHeader>

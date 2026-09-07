@@ -43,6 +43,18 @@ export const adminController = {
     }
   },
 
+  updateMemberRole: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = param(req, 'id');
+      const familyId = req.params.familyId as string;
+      const { role } = req.body as { role: string };
+      const member = await adminService.updateMemberRole(userId, familyId, role);
+      sendSuccess(res, MSG.ADMIN_MEMBER_ROLE_UPDATED, { member });
+    } catch (e) {
+      next(e);
+    }
+  },
+
   // ─── Families ─────────────────────────────────────────────────────────────
 
   listFamilies: async (req: Request, res: Response, next: NextFunction) => {

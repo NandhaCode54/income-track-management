@@ -8,11 +8,13 @@ import { audit } from '../../middlewares/audit.middleware';
 import { adminController } from './admin.controller';
 import {
   announcementSchema,
+  familyRoleParamSchema,
   idParamSchema,
   listAuditLogsSchema,
   listFamiliesSchema,
   listSubscriptionsSchema,
   listUsersSchema,
+  updateMemberRoleSchema,
   userStatusSchema,
 } from './admin.validator';
 
@@ -43,6 +45,15 @@ router.patch(
   validate(userStatusSchema),
   audit({ action: AuditAction.UPDATE, entity: 'User' }),
   adminController.setUserStatus,
+);
+
+router.patch(
+  '/users/:id/families/:familyId/role',
+  requirePermission('ADMIN_ACCESS'),
+  validate(familyRoleParamSchema, 'params'),
+  validate(updateMemberRoleSchema),
+  audit({ action: AuditAction.UPDATE, entity: 'FamilyMember' }),
+  adminController.updateMemberRole,
 );
 
 // ─── Families ───────────────────────────────────────────────────────────────

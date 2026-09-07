@@ -1,5 +1,6 @@
 import { useAdminAnalytics } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import StatCard from '@/components/common/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Home, CreditCard, TrendingUp, TrendingDown } from 'lucide-react';
@@ -18,7 +19,7 @@ const AdminDashboardPage = () => {
   if (isLoading || !analytics) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Admin Dashboard" description="Platform-wide overview." />
+        <PageHeader title="Admin Dashboard" description="Platform-wide overview." backButton={<BackButton to="/admin" />} />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />
@@ -30,7 +31,7 @@ const AdminDashboardPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Admin Dashboard" description="Platform-wide overview." />
+      <PageHeader title="Admin Dashboard" description="Platform-wide overview." backButton={<BackButton to="/admin" />} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

@@ -35,6 +35,11 @@ export const listSubscriptionsSchema = z.object({
 
 export const idParamSchema = z.object({ id: z.string().cuid() });
 
+export const familyRoleParamSchema = z.object({
+  id: z.string().cuid(),
+  familyId: z.string().cuid(),
+});
+
 export const announcementSchema = z.object({
   title: z.string().min(1).max(200),
   message: z.string().min(1).max(2000),
@@ -42,4 +47,8 @@ export const announcementSchema = z.object({
 
 export const userStatusSchema = z.object({
   isActive: z.boolean(),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['TENANT_OWNER', 'FAMILY_HEAD', 'MEMBER', 'VIEWER']),
 });

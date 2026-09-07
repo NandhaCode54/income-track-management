@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -485,6 +486,7 @@ const SettingsPage = () => {
       <PageHeader
         title="Settings"
         description="Manage your account preferences and family workspace settings."
+        backButton={<BackButton />}
       />
 
       <div className="flex flex-col gap-6 md:flex-row">

@@ -38,6 +38,19 @@ export const useSetUserStatus = () => {
   });
 };
 
+export const useUpdateMemberRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, familyId, role }: { userId: string; familyId: string; role: string }) =>
+      adminApi.updateMemberRole(userId, familyId, role),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QK.ADMIN_USERS });
+      toast.success('Role updated.');
+    },
+    onError: (e) => toast.error('Could not update role', getApiErrorMessage(e)),
+  });
+};
+
 // ─── Families ───────────────────────────────────────────────────────────────
 
 export const useAdminFamilies = (query: ListFamiliesQuery) =>

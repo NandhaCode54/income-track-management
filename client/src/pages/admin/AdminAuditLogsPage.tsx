@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminAuditLogs } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +36,7 @@ const AdminAuditLogsPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Audit Logs" description="Platform-wide activity trail." />
+      <PageHeader title="Audit Logs" description="Platform-wide activity trail." backButton={<BackButton to="/admin" />} />
 
       <div className="flex flex-wrap items-center gap-3">
         <Select value={action} onChange={(e) => { setAction(e.target.value); setPage(1); }}>

@@ -44,6 +44,12 @@ export const adminService = {
     return adminRepository.setUserStatus(id, isActive);
   },
 
+  async updateMemberRole(userId: string, familyId: string, role: string) {
+    const member = await adminRepository.findMember(userId, familyId);
+    if (!member) throw new NotFoundError('Member');
+    return adminRepository.updateMemberRole(userId, familyId, role);
+  },
+
   // ─── Families ─────────────────────────────────────────────────────────────
 
   async listFamilies(query: ListFamiliesQuery) {

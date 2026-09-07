@@ -1,19 +1,124 @@
 import { useState } from 'react';
-import { useAdminUsers, useSetUserStatus } from '@/features/admin/admin.hooks';
+import { useAdminUsers, useSetUserStatus, useUpdateMemberRole } from '@/features/admin/admin.hooks';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import Pagination from '@/components/common/Pagination';
 import EmptyState from '@/components/common/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, UserCheck, UserX } from 'lucide-react';
-import { ROLE_LABELS } from '@/constants/permissions';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Search, UserCheck, UserX, Pencil, Loader2 } from 'lucide-react';
+import { ROLE_LABELS, ROLE_DESCRIPTIONS } from '@/constants/permissions';
 import type { UserRole } from '@/types/auth.types';
+import type { AdminUser } from '@/types/admin.types';
+
+const ALL_ROLES: UserRole[] = ['TENANT_OWNER', 'FAMILY_HEAD', 'MEMBER', 'VIEWER'];
+
+const RoleEditDialog = ({
+  user,
+  open,
+  onOpenChange,
+}: {
+  user: AdminUser;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const updateRole = useUpdateMemberRole();
+
+  const [edits, setEdits] = useState<Record<string, UserRole>>(() =>
+    Object.fromEntries(user.families.map((f) => [f.id, f.role])),
+  );
+
+  const hasChanges = user.families.some((f) => edits[f.id] !== f.role);
+
+  const handleSave = () => {
+    const changes = user.families.filter((f) => edits[f.id] !== f.role);
+    if (changes.length === 0) return;
+
+    let pending = changes.length;
+    changes.forEach((f) => {
+      updateRole.mutate(
+        { userId: user.id, familyId: f.id, role: edits[f.id] },
+        {
+          onSettled: () => {
+            pending -= 1;
+            if (pending === 0) onOpenChange(false);
+          },
+        },
+      );
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Roles</DialogTitle>
+          <DialogDescription>
+            Change {user.firstName}&apos;s role in their family workspaces.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {user.families.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              This user is not a member of any family.
+            </p>
+          ) : (
+            user.families.map((f) => (
+              <div key={f.id} className="space-y-1.5">
+                <Label className="text-sm font-medium">{f.name}</Label>
+                <Select
+                  value={edits[f.id] ?? f.role}
+                  onChange={(e) =>
+                    setEdits((prev) => ({ ...prev, [f.id]: e.target.value as UserRole }))
+                  }
+                >
+                  {ALL_ROLES.map((r) => (
+                    <option key={r} value={r}>
+                      {ROLE_LABELS[r]}
+                    </option>
+                  ))}
+                </Select>
+                {edits[f.id] && edits[f.id] !== 'TENANT_OWNER' && (
+                  <p className="text-xs text-muted-foreground">
+                    {ROLE_DESCRIPTIONS[edits[f.id] as keyof typeof ROLE_DESCRIPTIONS] ?? ''}
+                  </p>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={!hasChanges || updateRole.isPending}>
+            {updateRole.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const AdminUsersPage = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
 
   const query = useAdminUsers({ page, search: search || undefined });
   const toggleStatus = useSetUserStatus();
@@ -28,7 +133,7 @@ const AdminUsersPage = () => {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="User Management" description="View and manage all platform users." />
+      <PageHeader title="User Management" description="View and manage all platform users." backButton={<BackButton to="/admin" />} />
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
@@ -87,10 +192,20 @@ const AdminUsersPage = () => {
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {user.families.map((f) => (
-                          <Badge key={f.id} variant="secondary" className="text-[10px]">
-                            {ROLE_LABELS[f.role as UserRole] ?? f.role}
-                          </Badge>
+                          <button
+                            key={f.id}
+                            onClick={() => setEditingUser(user)}
+                            className="group inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Badge variant="secondary" className="text-[10px] group-hover:bg-primary/20 transition-colors">
+                              {ROLE_LABELS[f.role as UserRole] ?? f.role}
+                            </Badge>
+                            <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
                         ))}
+                        {user.families.length === 0 && (
+                          <span className="text-xs text-muted-foreground">No family</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -102,20 +217,24 @@ const AdminUsersPage = () => {
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={toggleStatus.isPending}
-                        onClick={() =>
-                          toggleStatus.mutate({ id: user.id, isActive: !user.isActive })
-                        }
-                      >
-                        {user.isActive ? (
-                          <UserX className="h-4 w-4 text-destructive" />
-                        ) : (
-                          <UserCheck className="h-4 w-4 text-emerald-500" />
-                        )}
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={toggleStatus.isPending}
+                          onClick={() =>
+                            toggleStatus.mutate({ id: user.id, isActive: !user.isActive })
+                          }
+                          title={user.isActive ? 'Deactivate' : 'Activate'}
+                        >
+                          {user.isActive ? (
+                            <UserX className="h-4 w-4 text-destructive" />
+                          ) : (
+                            <UserCheck className="h-4 w-4 text-emerald-500" />
+                          )}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -127,6 +246,16 @@ const AdminUsersPage = () => {
 
       {meta && meta.total > 0 && (
         <Pagination meta={meta} onPageChange={setPage} label="users" />
+      )}
+
+      {editingUser && (
+        <RoleEditDialog
+          user={editingUser}
+          open={!!editingUser}
+          onOpenChange={(open) => {
+            if (!open) setEditingUser(null);
+          }}
+        />
       )}
     </div>
   );

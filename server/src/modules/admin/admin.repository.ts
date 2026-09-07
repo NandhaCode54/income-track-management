@@ -96,6 +96,25 @@ export const adminRepository = {
     return prisma.user.update({ where: { id }, data: { isActive } });
   },
 
+  updateMemberRole(userId: string, familyId: string, role: string) {
+    return prisma.familyMember.update({
+      where: { familyId_userId: { familyId, userId } },
+      data: { role: role as never },
+      select: {
+        id: true,
+        role: true,
+        family: { select: { id: true, name: true } },
+      },
+    });
+  },
+
+  findMember(userId: string, familyId: string) {
+    return prisma.familyMember.findUnique({
+      where: { familyId_userId: { familyId, userId } },
+      select: { id: true, role: true },
+    });
+  },
+
   // ─── Families ─────────────────────────────────────────────────────────────
 
   listFamilies(query: ListFamiliesQuery) {

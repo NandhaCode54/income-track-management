@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Home, CreditCard, ScrollText, BarChart3, Megaphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PageHeader from '@/components/common/PageHeader';
+import BackButton from '@/components/common/BackButton';
 import { useAdminAnalytics } from '@/features/admin/admin.hooks';
 
 const adminSections = [
@@ -23,6 +24,7 @@ const AdminPage = () => {
       <PageHeader
         title="Admin Panel"
         description="Manage the platform, users, and families."
+        backButton={<BackButton to="/" />}
       />
 
       {analytics && (
