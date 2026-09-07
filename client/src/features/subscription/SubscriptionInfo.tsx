@@ -1,22 +1,31 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { AlertTriangle, CheckCircle, Clock, CreditCard, Loader2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, CreditCard, Loader2, Wallet, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Subscription } from '@/types/subscription.types';
 import { PLAN_LABELS, STATUS_LABELS, STATUS_VARIANTS } from '@/types/subscription.types';
-import { useCancelSubscription, useReactivateSubscription } from './subscription.hooks';
+import { useCancelSubscription, useDemoPay, useReactivateSubscription, useSubscriptionStatus } from './subscription.hooks';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 interface SubscriptionInfoProps {
   subscription: Subscription;
 }
 
+/** `null` percents the plan detail to "requested" — an upgrade intent awaiting payment. */
+const formatAmount = (amount: number | null): string =>
+  amount == null ? '' : `₹${amount.toLocaleString('en-IN')}`;
+
 const SubscriptionInfo = ({ subscription }: SubscriptionInfoProps) => {
   const cancelMutation = useCancelSubscription();
   const reactivateMutation = useReactivateSubscription();
+  const demoPayMutation = useDemoPay();
+  const { data: planStatus } = useSubscriptionStatus();
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  const isPendingPayment = subscription.status === 'PENDING_PAYMENT';
+  const demoMode = planStatus?.demoMode ?? false;
 
   const statusVariant = STATUS_VARIANTS[subscription.status];
   const isCancelled = subscription.status === 'CANCELLED';
@@ -39,6 +48,40 @@ const SubscriptionInfo = ({ subscription }: SubscriptionInfoProps) => {
             </div>
             <Badge variant={statusVariant}>{STATUS_LABELS[subscription.status]}</Badge>
           </div>
+
+          {isPendingPayment && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div className="space-y-1">
+                  <p className="font-medium">
+                    {PLAN_LABELS[subscription.pendingPlan ?? subscription.plan]} upgrade requested
+                    {subscription.pendingAmount ? ` — ${formatAmount(subscription.pendingAmount)} due` : ''}
+                  </p>
+                  <p className="text-amber-700">
+                    Your current plan stays active until the payment is confirmed. A confirmation from
+                    the payment provider activates it automatically.
+                  </p>
+                  {demoMode && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1 border-amber-300 text-amber-800"
+                      disabled={demoPayMutation.isPending}
+                      onClick={() => demoPayMutation.mutate()}
+                    >
+                      {demoPayMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wallet className="mr-2 h-4 w-4" />
+                      )}
+                      Complete demo payment
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-2">

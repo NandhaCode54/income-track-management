@@ -1,19 +1,44 @@
 import { PrismaClient, UserRole, PlanType, SubscriptionStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { DEFAULT_EXPENSE_CATEGORIES } from '../src/shared/constants/categories';
 
 const prisma = new PrismaClient();
 
+/**
+ * A seed is a *write to data* — refusing to run against production by default
+ * is the whole guard here. An operator who genuinely wants a throwaway admin in
+ * a staging prod-like environment can opt in explicitly with
+ * `SEED_ALLOWED_PRODUCTION=true`, but the script will never do it because it was
+ * invoked accidentally.
+ */
+const assertAllowed = (): void => {
+  if (process.env.NODE_ENV === 'production' && process.env.SEED_ALLOWED_PRODUCTION !== 'true') {
+    throw new Error(
+      'Refusing to seed in production. Set SEED_ALLOWED_PRODUCTION=true only if this is a throwaway environment.',
+    );
+  }
+};
+
 async function main() {
+  assertAllowed();
   console.log('🌱 Seeding database...');
 
-  // Super admin
-  const adminHash = await bcrypt.hash('Admin@123456', 12);
+  // Super admin — credentials come from the environment, never a checked-in
+  // password. If none is supplied we generate one and print it once; dev seeds
+  // are supposed to be throwaway.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@familyfinance.app';
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? crypto.randomBytes(12).toString('hex');
+  const adminHash = await bcrypt.hash(adminPassword, 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@familyfinance.app' },
-    update: {},
+    where: { email: adminEmail },
+    update: {
+      // Uphold an env-supplied password on re-seeds too; a fresh random one also
+      // lands so a regenerated throwaway account stays usable.
+      passwordHash: adminHash,
+    },
     create: {
-      email: 'admin@familyfinance.app',
+      email: adminEmail,
       passwordHash: adminHash,
       firstName: 'Super',
       lastName: 'Admin',
@@ -67,8 +92,12 @@ async function main() {
   });
 
   console.log('✅ Seed complete');
-  console.log('   Admin email: admin@familyfinance.app');
-  console.log('   Admin password: Admin@123456');
+  console.log(`   Admin email: ${adminEmail}`);
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    // The password is only logged when the environment did not supply one —
+    // never echo an operator-chosen credential back to the console.
+    console.log(`   Generated admin password: ${adminPassword}`);
+  }
 }
 
 main()

@@ -1,6 +1,7 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PlanType } from '@prisma/client';
 import { budgetRepository, type BudgetRow } from './budget.repository';
 import { expenseRepository } from '../expense/expense.repository';
+import { subscriptionService } from '../subscription/subscription.service';
 import { runBudgetCheck } from './budget.alert';
 import {
   percentUsedOf,
@@ -28,6 +29,43 @@ const round2 = (value: number): number => Math.round(value * 100) / 100;
 
 const OVERALL_LABEL = 'Everything';
 const UNCATEGORISED_LABEL = 'Uncategorised';
+
+/**
+ * The FREE tier's "Up to 5 budget categories". The overall family-wide budget
+ * (`categoryId = null`) does not count toward it — the cap is about how many
+ * categories a family can budget against in a single month.
+ */
+const FREE_CATEGORY_BUDGET_LIMIT = 5;
+
+/**
+ * Enforced server-side in `create` and `copy`, not by UI copy: a FREE family
+ * upgrading mid-month must not have snuck a sixth category line in via the API,
+ * and the cap is read from the live plan so it cannot be gamed by client claims.
+ * `incomingNewCategories` is how many categories the upcoming write adds that
+ * are not budgeted yet in the target period.
+ */
+const assertCategoryBudgetCap = async (
+  familyId: string,
+  month: number,
+  year: number,
+  incomingNewCategories: number,
+): Promise<void> => {
+  const plan = await subscriptionService.getPlan(familyId);
+  if (!plan || plan.plan !== PlanType.FREE) return;
+
+  const current = await budgetRepository.listForPeriod(familyId, month, year);
+  const currentDistinct = new Set(
+    current.map((row) => row.categoryId).filter((id): id is string => id !== null),
+  ).size;
+
+  if (currentDistinct + incomingNewCategories > FREE_CATEGORY_BUDGET_LIMIT) {
+    throw new ValidationError(MSG.VALIDATION_ERROR, {
+      categoryId: [
+        `The FREE plan allows up to ${FREE_CATEGORY_BUDGET_LIMIT} budget categories per month.`,
+      ],
+    });
+  }
+};
 
 const categoryLabel = (row: BudgetRow): string => {
   if (!row.category) return OVERALL_LABEL;
@@ -155,6 +193,7 @@ export const budgetService = {
 
   async create(actor: ActorContext, input: CreateBudgetInput): Promise<BudgetDto> {
     const categoryId = await assertCategoryInFamily(actor.familyId, input.categoryId);
+    if (categoryId) await assertCategoryBudgetCap(actor.familyId, input.month, input.year, 1);
     await assertNoDuplicate(actor.familyId, categoryId, input.month, input.year);
 
     const row = await budgetRepository.create(actor.familyId, {
@@ -211,6 +250,21 @@ export const budgetService = {
 
     if (source.length === 0) {
       throw new ValidationError(MSG.VALIDATION_ERROR, { fromMonth: [MSG.BUDGET_COPY_EMPTY] });
+    }
+
+    // The cap counts categories new to the target period — re-copying the same
+    // five categories is fine, adding a sixth is not.
+    const target = await budgetRepository.listForPeriod(
+      actor.familyId,
+      input.toMonth,
+      input.toYear,
+    );
+    const alreadyBudgeted = new Set(target.map((row) => row.categoryId).filter((id): id is string => id !== null));
+    const incomingNewCategories = new Set(
+      source.map((row) => row.categoryId).filter((id): id is string => id !== null && !alreadyBudgeted.has(id)),
+    ).size;
+    if (incomingNewCategories > 0) {
+      await assertCategoryBudgetCap(actor.familyId, input.toMonth, input.toYear, incomingNewCategories);
     }
 
     return budgetRepository.copyPeriod(

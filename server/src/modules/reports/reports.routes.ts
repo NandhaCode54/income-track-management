@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { resolveTenant } from '../../middlewares/tenant.middleware';
 import { requirePermission } from '../../middlewares/rbac.middleware';
+import { requirePlan } from '../../middlewares/plan.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { reportsController } from './reports.controller';
 import {
@@ -22,7 +23,15 @@ const router = Router();
 
 router.use(authenticate, resolveTenant);
 
-router.get('/export/pdf', requirePermission('REPORTS_EXPORT'), validate(reportExportSchema, 'query'), reportsController.exportPdf);
+// PDF export is a PRO+ entitlement; CSV/Excel stays free so a FREE family can
+// still get its numbers out of the workspace.
+router.get(
+  '/export/pdf',
+  requirePermission('REPORTS_EXPORT'),
+  requirePlan('PDF_EXPORT'),
+  validate(reportExportSchema, 'query'),
+  reportsController.exportPdf,
+);
 router.get('/export/excel', requirePermission('REPORTS_EXPORT'), validate(reportExportSchema, 'query'), reportsController.exportExcel);
 
 // Literal paths before `/:id`-shaped patterns is moot here (no :id routes),

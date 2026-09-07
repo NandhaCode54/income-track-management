@@ -49,6 +49,21 @@ const envSchema = z.object({
   INVITE_EXPIRES_HOURS: z.coerce.number().default(48),
   VERIFICATION_EXPIRES_HOURS: z.coerce.number().default(24),
   RESET_TOKEN_EXPIRES_MINUTES: z.coerce.number().default(30),
+
+  /**
+   * Payment verification. There is no hosted checkout: an upgrade only ever
+   * records a pending intent, and the subscription becomes ACTIVE through one of
+   * two doors — a signature-verified provider webhook, or (development/demo
+   * only) `PAYMENT_DEMO_MODE`, which simulates the provider. Both run the same
+   * activation; a production deploy with no provider configured fails closed:
+   * nobody can activate a paid plan, including via the API.
+   */
+  PAYMENT_DEMO_MODE: z
+    .string()
+    .transform((v) => v === 'true')
+    .default('false'),
+  /** HMAC secret shared with the payment provider to sign webhook payloads. */
+  PAYMENT_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

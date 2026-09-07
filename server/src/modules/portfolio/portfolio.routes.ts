@@ -5,6 +5,7 @@ import { AuditAction } from '@prisma/client';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { resolveTenant } from '../../middlewares/tenant.middleware';
 import { requirePermission } from '../../middlewares/rbac.middleware';
+import { requirePlan } from '../../middlewares/plan.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { audit } from '../../middlewares/audit.middleware';
 import {
@@ -39,9 +40,10 @@ const crudRoutes = (
   createSchema: ZodSchema,
   updateSchema: ZodSchema,
   entity: string,
+  feature: 'PORTFOLIO' | 'ASSETS_LIABILITIES',
 ): Router => {
   const router = Router();
-  router.use(authenticate, resolveTenant);
+  router.use(authenticate, resolveTenant, requirePlan(feature));
 
   router.get('/', requirePermission('FINANCE_VIEW'), controller.list as RequestHandler);
   router.post(
@@ -81,6 +83,7 @@ export const investmentRoutes = crudRoutes(
   createInvestmentSchema,
   updateInvestmentSchema,
   'Investment',
+  'PORTFOLIO',
 );
 
 export const assetRoutes = crudRoutes(
@@ -88,6 +91,7 @@ export const assetRoutes = crudRoutes(
   createAssetSchema,
   updateAssetSchema,
   'Asset',
+  'ASSETS_LIABILITIES',
 );
 
 export const liabilityRoutes = crudRoutes(
@@ -95,6 +99,7 @@ export const liabilityRoutes = crudRoutes(
   createLiabilitySchema,
   updateLiabilitySchema,
   'Liability',
+  'ASSETS_LIABILITIES',
 );
 
 /**
@@ -103,7 +108,7 @@ export const liabilityRoutes = crudRoutes(
  * the figure ignores liabilities — it does not).
  */
 const portfolioRoutes = Router();
-portfolioRoutes.use(authenticate, resolveTenant);
+portfolioRoutes.use(authenticate, resolveTenant, requirePlan('PORTFOLIO'));
 portfolioRoutes.get('/net-worth', requirePermission('FINANCE_VIEW'), netWorthController.get);
 
 export { portfolioRoutes };

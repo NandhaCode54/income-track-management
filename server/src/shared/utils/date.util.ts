@@ -63,6 +63,10 @@ export const addDaysUtc = (date: Date, days: number): Date =>
 export const endOfDayUtc = (date: Date): Date =>
   new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
 
+/** `date` clipped to UTC midnight. Stored dates are already UTC midnights. */
+export const startOfDayUtc = (date: Date): Date =>
+  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+
 /** Whole days from `from` to `to`; negative when `to` is in the past. */
 export const wholeDaysBetween = (from: Date, to: Date): number =>
   Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);

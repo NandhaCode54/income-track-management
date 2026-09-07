@@ -10,12 +10,16 @@ import { logger } from '../../shared/utils/logger';
  * per-user email digest so three bills due the same week are one email, not
  * three.
  *
+ * `emailFamilies` (when given) restricts who gets an email to those family ids,
+ * which is what gates "email reminders" behind the paid plan — in-app rows are
+ * still written for everyone, only the SMTP leg is entitlement-checked.
+ *
  * Email failures are logged, never thrown — an SMTP hiccup must not fail a
  * cron tick whose notifications were already persisted.
  */
 export const dispatchNotifications = async (
   rows: NotificationRow[],
-  options: { email?: boolean } = {},
+  options: { email?: boolean; emailFamilies?: Set<string> } = {},
 ): Promise<number> => {
   if (rows.length === 0) return 0;
 
@@ -32,7 +36,12 @@ export const dispatchNotifications = async (
     })),
   });
 
-  if (options.email) await sendDigests(rows);
+  if (options.email) {
+    const emailRows = options.emailFamilies
+      ? rows.filter((row) => options.emailFamilies?.has(row.familyId))
+      : rows;
+    if (emailRows.length > 0) await sendDigests(emailRows);
+  }
 
   return rows.length;
 };

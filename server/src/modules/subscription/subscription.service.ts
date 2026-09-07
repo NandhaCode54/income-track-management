@@ -8,9 +8,18 @@ import type {
   SubscriptionWithPlanDto,
   UpgradePlanInput,
 } from './subscription.types';
-import { PLAN_DEFINITIONS, PLAN_MEMBER_LIMITS } from './subscription.types';
+import { PLAN_DEFINITIONS, PLAN_MEMBER_LIMITS, planPriceFor } from './subscription.types';
+import { env } from '../../config/env';
 
 export const subscriptionService = {
+  /** The family's current plan row — used by the `requirePlan` middleware. */
+  async getPlan(
+    familyId: string,
+  ): Promise<{ plan: PlanType; status: SubscriptionStatus } | null> {
+    const row = await subscriptionRepository.findByFamilyId(familyId);
+    return row ? { plan: row.plan, status: row.status } : null;
+  },
+
   async getCurrent(familyId: string): Promise<SubscriptionWithPlanDto> {
     const row = await subscriptionRepository.findByFamilyId(familyId);
     if (!row) throw new NotFoundError('Subscription');
@@ -47,9 +56,68 @@ export const subscriptionService = {
       }
     }
 
-    const row = await subscriptionRepository.upgrade(familyId, input);
+    // An upgrade is only ever an *intent* here. The plan does not change until a
+    // verified payment activates it (signed webhook, or the dev-only demo
+    // provider). The client-supplied `externalId` is no longer accepted as proof
+    // of payment — that avenue is what let anyone self-assign PRO/FAMILY.
+    const amount = planPriceFor(input.plan, input.billingCycle);
+    const row = await subscriptionRepository.createPendingUpgrade(familyId, {
+      ...input,
+      amount,
+    });
     const planDetails = PLAN_DEFINITIONS.find((p) => p.plan === row.plan) ?? PLAN_DEFINITIONS[0];
     return { ...this.toDto(row), planDetails };
+  },
+
+  /**
+   * Applies a verified, paid-for upgrade. Reached only through the signature-
+   * checked webhook or the development-only demo provider — never from client input.
+   * The pending intent must still match what was paid for, so a stale or
+   * mismatched webhook cannot surprise-activate a different plan.
+   */
+  async activateVerifiedPayment(
+    familyId: string,
+    plan: PlanType,
+    billingCycle: 'monthly' | 'yearly',
+    reference: string,
+  ): Promise<SubscriptionWithPlanDto> {
+    const current = await subscriptionRepository.findByFamilyId(familyId);
+    if (!current) throw new NotFoundError('Subscription');
+
+    if (
+      current.status !== SubscriptionStatus.PENDING_PAYMENT ||
+      current.pendingPlan !== plan ||
+      current.pendingBillingCycle !== billingCycle
+    ) {
+      throw new ValidationError(MSG.VALIDATION_ERROR, {
+        plan: ['No matching pending upgrade for this payment.'],
+      });
+    }
+
+    const row = await subscriptionRepository.activateVerifiedPayment(
+      familyId,
+      plan,
+      billingCycle,
+      reference,
+    );
+    const planDetails = PLAN_DEFINITIONS.find((p) => p.plan === row.plan) ?? PLAN_DEFINITIONS[0];
+    return { ...this.toDto(row), planDetails };
+  },
+
+  /** The dev/demo stand-in for the payment provider's webhook call. */
+  async completeDemoPayment(familyId: string, reference: string): Promise<SubscriptionWithPlanDto> {
+    const current = await subscriptionRepository.findByFamilyId(familyId);
+    if (!current || current.status !== SubscriptionStatus.PENDING_PAYMENT || !current.pendingPlan) {
+      throw new ValidationError(MSG.VALIDATION_ERROR, {
+        plan: ['No payment is awaiting confirmation on this subscription.'],
+      });
+    }
+    return this.activateVerifiedPayment(
+      familyId,
+      current.pendingPlan,
+      (current.pendingBillingCycle as 'monthly' | 'yearly') ?? 'monthly',
+      reference,
+    );
   },
 
   async cancel(familyId: string): Promise<SubscriptionWithPlanDto> {
@@ -88,16 +156,26 @@ export const subscriptionService = {
     return { ...this.toDto(row), planDetails };
   },
 
-  async getPlanStatus(familyId: string): Promise<{ plan: PlanType; status: SubscriptionStatus; isPremium: boolean }> {
+async getPlanStatus(familyId: string): Promise<{
+    plan: PlanType;
+    status: SubscriptionStatus;
+    isPremium: boolean;
+    demoMode: boolean;
+  }> {
     const { plan, status } = await subscriptionRepository.getPlanStatus(familyId);
     return {
       plan,
       status,
-      isPremium: plan !== PlanType.FREE && (status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.TRIAL),
+      isPremium:
+        plan !== PlanType.FREE &&
+        (status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.TRIAL),
+      // Lets the client unveil the "complete demo payment" button for a
+      // PENDING_PAYMENT intent; unreachable in production.
+      demoMode: env.PAYMENT_DEMO_MODE && env.NODE_ENV !== 'production',
     };
   },
 
-  toDto(row: { id: string; plan: PlanType; status: SubscriptionStatus; startDate: Date; renewalDate: Date | null; cancelledAt: Date | null; trialEndsAt: Date | null; paymentMethod: string | null; createdAt: Date; updatedAt: Date }): SubscriptionDto {
+  toDto(row: { id: string; plan: PlanType; status: SubscriptionStatus; startDate: Date; renewalDate: Date | null; cancelledAt: Date | null; trialEndsAt: Date | null; paymentMethod: string | null; pendingPlan: PlanType | null; pendingBillingCycle: string | null; pendingAmount: { toString(): string } | number | null; createdAt: Date; updatedAt: Date }): SubscriptionDto {
     return {
       id: row.id,
       plan: row.plan,
@@ -107,6 +185,9 @@ export const subscriptionService = {
       cancelledAt: row.cancelledAt,
       trialEndsAt: row.trialEndsAt,
       paymentMethod: row.paymentMethod,
+      pendingPlan: row.pendingPlan,
+      pendingBillingCycle: row.pendingBillingCycle,
+      pendingAmount: row.pendingAmount ? Number(row.pendingAmount) : null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

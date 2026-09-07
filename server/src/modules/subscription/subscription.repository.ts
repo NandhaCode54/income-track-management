@@ -13,6 +13,9 @@ export const subscriptionSelect = {
   trialEndsAt: true,
   paymentMethod: true,
   externalId: true,
+  pendingPlan: true,
+  pendingBillingCycle: true,
+  pendingAmount: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.SubscriptionSelect;
@@ -54,9 +57,42 @@ export const subscriptionRepository = {
     });
   },
 
-  async upgrade(familyId: string, input: UpgradePlanInput): Promise<SubscriptionRow> {
+  /**
+   * Records an upgrade *intent*, never an activation. The family's plan stays
+   * where it is and `status` becomes `PENDING_PAYMENT`; the price is computed
+   * server-side so a client cannot bargain its way to an entitlement. Only
+   * `activateVerifiedPayment` (webhook / demo provider) applies the change.
+   */
+  async createPendingUpgrade(
+    familyId: string,
+    input: { plan: PlanType; billingCycle: 'monthly' | 'yearly'; amount: number; paymentMethod?: string },
+  ): Promise<SubscriptionRow> {
+    return prisma.subscription.update({
+      where: { familyId },
+      data: {
+        status: SubscriptionStatus.PENDING_PAYMENT,
+        pendingPlan: input.plan,
+        pendingBillingCycle: input.billingCycle,
+        pendingAmount: input.amount,
+        ...(input.paymentMethod ? { paymentMethod: input.paymentMethod } : {}),
+      },
+      select: subscriptionSelect,
+    });
+  },
+
+  /**
+   * The only door that turns a pending intent into an ACTIVE paid plan. Called
+   * by the verified webhook path (and the dev-only demo provider); never by
+   * client input.
+   */
+  async activateVerifiedPayment(
+    familyId: string,
+    plan: PlanType,
+    billingCycle: 'monthly' | 'yearly',
+    reference: string,
+  ): Promise<SubscriptionRow> {
     const renewalDate = new Date();
-    if (input.billingCycle === 'monthly') {
+    if (billingCycle === 'monthly') {
       renewalDate.setMonth(renewalDate.getMonth() + 1);
     } else {
       renewalDate.setFullYear(renewalDate.getFullYear() + 1);
@@ -65,13 +101,15 @@ export const subscriptionRepository = {
     return prisma.subscription.update({
       where: { familyId },
       data: {
-        plan: input.plan,
+        plan,
         status: SubscriptionStatus.ACTIVE,
         renewalDate,
         cancelledAt: null,
         trialEndsAt: null,
-        ...(input.paymentMethod ? { paymentMethod: input.paymentMethod } : {}),
-        ...(input.externalId ? { externalId: input.externalId } : {}),
+        externalId: reference,
+        pendingPlan: null,
+        pendingBillingCycle: null,
+        pendingAmount: null,
       },
       select: subscriptionSelect,
     });
@@ -83,6 +121,10 @@ export const subscriptionRepository = {
       data: {
         status: SubscriptionStatus.CANCELLED,
         cancelledAt: new Date(),
+        // A cancelled subscription must not be activated later by a stale webhook.
+        pendingPlan: null,
+        pendingBillingCycle: null,
+        pendingAmount: null,
       },
       select: subscriptionSelect,
     });

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api } from './api';
 import type {
   AuthResponse,
@@ -22,6 +23,22 @@ export const authApi = {
 
   async login(payload: LoginPayload): Promise<AuthResponse> {
     const { data } = await api.post<ApiEnvelope<AuthResponse>>('/auth/login', payload);
+    return data.data as AuthResponse;
+  },
+
+  /**
+   * Session bootstrap on a full page reload. The access token lives only in
+   * memory (it is deliberately not persisted), so when the app boots there is
+   * no bearer to attach — the refresh *cookie* is the proof of session. This
+   * deliberately uses plain axios (not the `api` instance) so the 401-refresh
+   * interceptor cannot recurse into itself.
+   */
+  async refresh(): Promise<AuthResponse> {
+    const { data } = await axios.post<ApiEnvelope<AuthResponse>>(
+      '/api/v1/auth/refresh',
+      {},
+      { withCredentials: true },
+    );
     return data.data as AuthResponse;
   },
 

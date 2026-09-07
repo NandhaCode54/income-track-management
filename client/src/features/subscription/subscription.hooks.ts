@@ -25,10 +25,23 @@ export const useUpgradePlan = ({ onSuccess }: { onSuccess?: () => void } = {}) =
     mutationFn: (payload: UpgradePayload) => subscriptionApi.upgrade(payload),
     onSuccess: () => {
       invalidateSubscription(queryClient);
-      toast.success('Plan upgraded successfully');
+      // Upgrades now *request* the plan; activation waits on the payment.
+      toast.success('Upgrade requested — the new plan activates once the payment is confirmed.');
       onSuccess?.();
     },
-    onError: (e) => toast.error('Could not upgrade plan', getApiErrorMessage(e)),
+    onError: (e) => toast.error('Could not request plan upgrade', getApiErrorMessage(e)),
+  });
+};
+
+export const useDemoPay = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => subscriptionApi.demoPay(),
+    onSuccess: () => {
+      invalidateSubscription(queryClient);
+      toast.success('Plan upgraded successfully');
+    },
+    onError: (e) => toast.error('Could not complete demo payment', getApiErrorMessage(e)),
   });
 };
 

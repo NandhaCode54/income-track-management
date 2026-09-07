@@ -1,7 +1,7 @@
 export const PLAN_TYPES = ['FREE', 'PRO', 'FAMILY', 'ENTERPRISE'] as const;
 export type PlanType = (typeof PLAN_TYPES)[number];
 
-export const SUBSCRIPTION_STATUSES = ['TRIAL', 'ACTIVE', 'INACTIVE', 'CANCELLED', 'EXPIRED'] as const;
+export const SUBSCRIPTION_STATUSES = ['TRIAL', 'ACTIVE', 'INACTIVE', 'CANCELLED', 'EXPIRED', 'PENDING_PAYMENT'] as const;
 export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
 
 export interface PlanFeature {
@@ -29,6 +29,10 @@ export interface Subscription {
   cancelledAt: string | null;
   trialEndsAt: string | null;
   paymentMethod: string | null;
+  /** Set while `status = PENDING_PAYMENT` — the upgrade waits on the payment. */
+  pendingPlan: PlanType | null;
+  pendingBillingCycle: string | null;
+  pendingAmount: number | null;
   createdAt: string;
   updatedAt: string;
   planDetails: PlanDefinition;
@@ -38,13 +42,14 @@ export interface PlanStatus {
   plan: PlanType;
   status: SubscriptionStatus;
   isPremium: boolean;
+  /** The dev/demo provider is available — "complete demo payment" works. */
+  demoMode: boolean;
 }
 
 export interface UpgradePayload {
   plan: PlanType;
   billingCycle: 'monthly' | 'yearly';
   paymentMethod?: string;
-  externalId?: string;
 }
 
 export const PLAN_LABELS: Record<PlanType, string> = {
@@ -60,6 +65,7 @@ export const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   INACTIVE: 'Inactive',
   CANCELLED: 'Cancelled',
   EXPIRED: 'Expired',
+  PENDING_PAYMENT: 'Awaiting payment',
 };
 
 export const STATUS_VARIANTS: Record<SubscriptionStatus, 'default' | 'success' | 'warning' | 'destructive' | 'muted'> = {
@@ -68,4 +74,5 @@ export const STATUS_VARIANTS: Record<SubscriptionStatus, 'default' | 'success' |
   INACTIVE: 'muted',
   CANCELLED: 'destructive',
   EXPIRED: 'destructive',
+  PENDING_PAYMENT: 'warning',
 };

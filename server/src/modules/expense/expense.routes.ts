@@ -6,6 +6,7 @@ import { validate } from '../../middlewares/validate.middleware';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { resolveTenant } from '../../middlewares/tenant.middleware';
 import { requirePermission } from '../../middlewares/rbac.middleware';
+import { requirePlan } from '../../middlewares/plan.middleware';
 import { audit } from '../../middlewares/audit.middleware';
 import { uploadCsv, uploadReceipt } from '../../middlewares/upload.middleware';
 import { idParamSchema } from '../../shared/validators/field.validator';
@@ -135,9 +136,12 @@ router.delete(
 );
 
 // ── Receipts.
+// Receipt/document storage is a PRO+ feature; the uploaded file itself never
+// grants the family past the gate (uploadReceipt runs after requirePlan).
 router.post(
   '/:id/receipt',
   requirePermission('FINANCE_WRITE'),
+  requirePlan('RECEIPTS'),
   validate(idParamSchema, 'params'),
   uploadReceipt,
   audit({ action: AuditAction.CREATE, entity: 'Receipt' }),
@@ -147,6 +151,7 @@ router.post(
 router.delete(
   '/:id/receipts/:receiptId',
   requirePermission('FINANCE_WRITE'),
+  requirePlan('RECEIPTS'),
   validate(receiptParamsSchema, 'params'),
   audit({ action: AuditAction.DELETE, entity: 'Receipt' }),
   expenseController.removeReceipt,

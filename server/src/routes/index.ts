@@ -19,7 +19,7 @@ import { notificationRoutes } from '../modules/notifications/notification.routes
 import { reportRoutes } from '../modules/reports/reports.routes';
 import { insightRoutes } from '../modules/insights/insights.routes';
 import { adminRoutes } from '../modules/admin/admin.routes';
-import { subscriptionRoutes } from '../modules/subscription/subscription.routes';
+import { subscriptionRoutes, subscriptionWebhookRouter } from '../modules/subscription/subscription.routes';
 import { settingsRoutes } from '../modules/settings/settings.routes';
 
 const router = Router();
@@ -47,6 +47,10 @@ router.use('/notifications', notificationRoutes);
 router.use('/reports', reportRoutes);
 router.use('/insights', insightRoutes);
 router.use('/admin', adminRoutes);
+// Order matters: the provider webhook is public and must be handled before the
+// authenticated /subscriptions router, whose `authenticate` middleware would
+// otherwise 401 it.
+router.use('/subscriptions/webhook', subscriptionWebhookRouter);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/settings', settingsRoutes);
 

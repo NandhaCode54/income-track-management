@@ -23,6 +23,12 @@ export const subscriptionApi = {
     return unwrap(data).subscription;
   },
 
+  /** Dev/demo only: the stand-in provider confirming the pending payment. */
+  async demoPay(): Promise<Subscription> {
+    const { data } = await api.post<ApiEnvelope<{ subscription: Subscription }>>('/subscriptions/demo-pay');
+    return unwrap(data).subscription;
+  },
+
   async cancel(): Promise<Subscription> {
     const { data } = await api.post<ApiEnvelope<{ subscription: Subscription }>>('/subscriptions/cancel');
     return unwrap(data).subscription;

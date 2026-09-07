@@ -1,7 +1,8 @@
-import { NotificationType, PaymentStatus } from '@prisma/client';
+import { NotificationType, PaymentStatus, SubscriptionStatus } from '@prisma/client';
 import { prisma } from '../config/database';
 import { dispatchNotifications } from '../modules/notifications/notification.service';
 import type { NotificationRow } from '../modules/notifications/notification.types';
+import { PLAN_FEATURE_ACCESS } from '../modules/subscription/subscription.types';
 import { REMINDER_LEAD_DAYS } from '../modules/emi/emi.types';
 import {
   addDaysUtc,
@@ -14,8 +15,8 @@ import { activeMemberUserIds, alreadyNotified, describeWhen } from './reminder.h
 
 /**
  * The daily sweep for the *periodic* payments — bills, rent, school fees and
- * chit-fund instalments. (EMIs have their own sweep; loans needed an overdue
- * flip that these ledgers do not.)
+ * chit-fund instalments. (EMIs have their own sweep.) It first flips due-and-
+ * unpaid obligations to OVERDUE, then reminds.
  *
  * Every ledger answers the same question — "what is unsettled and falls within
  * ±REMINDER_LEAD_DAYS of today?" — so each collector projects its rows into one
@@ -23,8 +24,8 @@ import { activeMemberUserIds, alreadyNotified, describeWhen } from './reminder.h
  * Notifications carry `entityId` in metadata, which is what `alreadyNotified`
  * matches on: one reminder per bill / fee / month, ever.
  *
- * Emails ride along (`{ email: true }`) — this is the plan's "email reminders",
- * delivered as one digest per user rather than one mail per item.
+ * Emails ride along only for families whose plan includes EMAIL_REMINDERS —
+ * one digest per user rather than one mail per item.
  */
 
 const formatMoney = (value: unknown): string =>
@@ -195,8 +196,46 @@ const collectChitItems = async (from: Date, to: Date): Promise<DueItem[]> => {
   return items;
 };
 
+/**
+ * A bill/rent/fee that slipped past its due date at 00:00 UTC stops being a
+ * PENDING obligation and is flippped to OVERDUE, so the app's status column
+ * matches reality even if no one logged in that day. Chit instalments are
+ * monthly obligations tracked per fund-month and are left to each fund's own
+ * bookkeeping.
+ */
+const flipOverdue = async (): Promise<void> => {
+  const today = startOfTodayUtc();
+  const overdueBy = {
+    where: { dueDate: { lt: today }, status: { in: [PaymentStatus.PENDING, PaymentStatus.PARTIAL] } },
+    data: { status: PaymentStatus.OVERDUE },
+  };
+  const [bills, rents, fees] = await Promise.all([
+    prisma.bill.updateMany(overdueBy),
+    prisma.rent.updateMany(overdueBy),
+    prisma.schoolFee.updateMany(overdueBy),
+  ]);
+  const flipped = (bills?.count ?? 0) + (rents?.count ?? 0) + (fees?.count ?? 0);
+  if (flipped > 0) logger.info(`Overdue sweep: ${flipped} payment(s) marked OVERDUE`);
+};
+
+/** The families whose plan includes EMAIL_REMINDERS — the digest pays only for these. */
+const emailEntitledFamilyIds = async (familyIds: string[]): Promise<Set<string>> => {
+  if (familyIds.length === 0) return new Set();
+  const entitledPlans = PLAN_FEATURE_ACCESS.EMAIL_REMINDERS;
+  const rows = await prisma.subscription.findMany({
+    where: {
+      familyId: { in: familyIds },
+      plan: { in: entitledPlans },
+      status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
+    },
+    select: { familyId: true },
+  });
+  return new Set((rows ?? []).map((row) => row.familyId));
+};
+
 export const runPaymentReminders = async (): Promise<number> => {
   const today = startOfTodayUtc();
+  await flipOverdue();
   /*
    * The window looks back as well as forward — a missed due date must still be
    * reminded about even if the day it fell due was missed by the job (a deploy,
@@ -235,7 +274,11 @@ export const runPaymentReminders = async (): Promise<number> => {
     })),
   );
 
-  await dispatchNotifications(rows, { email: true });
+  // Email reminders are a paid-plan entitlement; in-app rows still reach every member.
+  await dispatchNotifications(rows, {
+    email: true,
+    emailFamilies: await emailEntitledFamilyIds([...byFamily.keys()]),
+  });
   logger.info(
     `Payment sweep: ${pending.length} item(s) notified to ${rows.length} recipient(s)`,
   );

@@ -40,6 +40,20 @@ export const advance = (date: Date, frequency: Frequency): Date | null => {
 };
 
 /**
+ * The `index`-th occurrence of a series, measured from its **anchor** date —
+ * never from the previous occurrence. Stepping from the previous date is how
+ * month-end dates drift: 31 Jan advances to 28 Feb, and the next step from
+ * 28 Feb lands on 28 Mar instead of 31 Mar. Re-anchoring every time keeps the
+ * series landing on the anchor's day-of-month (clamped to the last valid day).
+ * `ONCE` never repeats and returns `null`.
+ */
+export const occurrenceAt = (start: Date, frequency: Frequency, index: number): Date | null => {
+  const step = stride(frequency);
+  if (!step || index < 0) return null;
+  return step.unit === 'days' ? addDays(start, step.size * index) : addMonths(start, step.size * index);
+};
+
+/**
  * The first occurrence strictly after `from` for a series that started on `start`.
  * Purely derived — recurring entries are not materialised into rows until the
  * scheduler lands (Phase 12), so this is what the UI shows as "next payment".

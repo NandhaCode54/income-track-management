@@ -296,13 +296,15 @@ export const familyService = {
 
     // The seat guard is re-checked at accept time, not just when the invite is
     // issued — a downgrade, or another invite accepted meanwhile, could have
-    // moved the family to its cap. This invite is still pending here and becomes
-    // this acceptee's active seat, so counting it keeps the pre/post-accept math
-    // identical to the guard `inviteMember` runs.
+    // moved the family to its cap. The invite being accepted is still pending
+    // *and also becomes* this acceptee's active seat, so it is counted once;
+    // post-accept that is `current + pendingInvites`. Only a genuine overflow
+    // (> the limit) is rejected — `>=` would block the invite that fills the
+    // last remaining seat (e.g. 2 active + 1 pending on a 3-seat plan).
     const { current, limit } = await subscriptionRepository.isWithinMemberLimit(invite.familyId);
     if (limit !== null) {
       const pendingInvites = await familyRepository.listPendingInvites(invite.familyId);
-      if (current + pendingInvites.length >= limit) {
+      if (current + pendingInvites.length > limit) {
         throw new ValidationError(MSG.VALIDATION_ERROR, {
           members: [
             `This family is at its ${limit}-member plan limit. Ask the family owner to upgrade before accepting.`,

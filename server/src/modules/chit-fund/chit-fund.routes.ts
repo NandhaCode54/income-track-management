@@ -4,6 +4,7 @@ import { AuditAction } from '@prisma/client';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { resolveTenant } from '../../middlewares/tenant.middleware';
 import { requirePermission } from '../../middlewares/rbac.middleware';
+import { requirePlan } from '../../middlewares/plan.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { audit } from '../../middlewares/audit.middleware';
 import { chitFundController } from './chit-fund.controller';
@@ -35,7 +36,7 @@ const paymentSchema = z.object({
 });
 
 const router = Router();
-router.use(authenticate, resolveTenant);
+router.use(authenticate, resolveTenant, requirePlan('CHIT_FUNDS'));
 
 router.get('/', requirePermission('FINANCE_VIEW'), chitFundController.list);
 router.post(

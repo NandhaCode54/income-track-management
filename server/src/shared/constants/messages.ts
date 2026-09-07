@@ -123,6 +123,7 @@ export const MSG = {
 
   // Subscription
   SUBSCRIPTION_FETCHED: 'Subscription fetched.',
+  SUBSCRIPTION_PENDING_PAYMENT: 'Upgrade requested — the new plan activates once the payment is confirmed.',
   SUBSCRIPTION_UPGRADED: 'Plan upgraded successfully.',
   SUBSCRIPTION_CANCELLED: 'Subscription cancelled.',
   SUBSCRIPTION_REACTIVATED: 'Subscription reactivated.',

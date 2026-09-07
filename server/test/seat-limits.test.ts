@@ -120,6 +120,25 @@ describe('seat limits — accept time (regression: enforced on acceptance too)',
     expect(familyRepository.acceptInvite).not.toHaveBeenCalled();
   });
 
+  it('accepts the invite that fills the last seat (regression: `>=` blocked the final seat)', async () => {
+    // post-accept state is `current + pending` (this invite becomes a member),
+    // so equality at the boundary — 2 active + the 1 invite being accepted on a
+    // 3-seat plan — must be allowed, since there is no genuine overflow.
+    (familyRepository.findInviteByToken as unknown as Fn).mockResolvedValue(inviteFixture);
+    (familyRepository.findMembershipByUserId as unknown as Fn).mockResolvedValue(null);
+    (subscriptionRepository.isWithinMemberLimit as unknown as Fn).mockResolvedValue({ current: 2, limit: 3 });
+    (familyRepository.listPendingInvites as unknown as Fn).mockResolvedValue([inviteFixture]);
+    (familyRepository.acceptInvite as unknown as Fn).mockResolvedValue({ familyId: 'f-1' });
+
+    const result = await familyService.acceptInvite(
+      { id: 'u-nandini', email: 'nandini@fam.com' },
+      'tok-1',
+    );
+
+    expect(result.familyId).toBe('f-1');
+    expect(familyRepository.acceptInvite).toHaveBeenCalledTimes(1);
+  });
+
   it('allows acceptance while seats remain, passing the resolved role and membership state', async () => {
     (familyRepository.findInviteByToken as unknown as Fn).mockResolvedValue(inviteFixture);
     (familyRepository.findMembershipByUserId as unknown as Fn).mockResolvedValue(null);

@@ -30,6 +30,7 @@ enum SubscriptionStatus {
   INACTIVE
   CANCELLED
   EXPIRED
+  PENDING_PAYMENT
 }
 
 enum IncomeType {
@@ -796,20 +797,25 @@ model Document {
 // ─── Subscription ───────────────────────────────────────────────────────────
 
 model Subscription {
-  id            String             @id @default(cuid())
-  familyId      String             @unique
-  plan          PlanType           @default(FREE)
-  status        SubscriptionStatus @default(TRIAL)
-  startDate     DateTime           @default(now())
-  renewalDate   DateTime?
-  cancelledAt   DateTime?
-  trialEndsAt   DateTime?
-  paymentMethod String?
-  externalId    String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  id                String             @id @default(cuid())
+  familyId          String             @unique
+  plan              PlanType           @default(FREE)
+  status            SubscriptionStatus @default(TRIAL)
+  startDate         DateTime           @default(now())
+  renewalDate       DateTime?
+  cancelledAt       DateTime?
+  trialEndsAt       DateTime?
+  paymentMethod     String?
+  externalId        String?
+  /// Unverified upgrade intent. `status = PENDING_PAYMENT` means these are set
+  /// and the plan change waits on a verified payment before it is applied.
+  pendingPlan       PlanType?
+  pendingBillingCycle String?
+  pendingAmount     Decimal?           @db.Decimal(10, 2)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
-  family        Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  family            Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }

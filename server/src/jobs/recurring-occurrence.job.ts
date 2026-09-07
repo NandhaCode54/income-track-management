@@ -1,7 +1,7 @@
 import { BillType, Frequency, IncomeType, Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
-import { advance } from '../shared/utils/recurrence.util';
-import { startOfTodayUtc, endOfDayUtc } from '../shared/utils/date.util';
+import { occurrenceAt } from '../shared/utils/recurrence.util';
+import { startOfTodayUtc, endOfDayUtc, startOfDayUtc } from '../shared/utils/date.util';
 import { logger } from '../shared/utils/logger';
 
 /**
@@ -41,18 +41,25 @@ interface RecurringSource<TCreate> {
   fields: TCreate;
 }
 
-/** All occurrence dates for a source series, skipping ones already materialised. */
+/**
+ * All missing occurrence dates for a source series, up to `end`.
+ *
+ * Dates are computed from the series' **anchor** — never by stepping from the
+ * previous occurrence — so month-end series do not drift. A salary anchored on
+ * the 31st lands on the 30th in a 30-day month and the 28th/29th in February
+ * and *returns to the 31st* the following month, instead of goal-posting forward
+ * one clamped step at a time (31 Jan → 28 Feb → 28 Mar).
+ */
 const missingDates = (source: RecurringSource<unknown>, materialized: Date[], end: Date): Date[] => {
   const existing = new Set(materialized.map((row) => row.toISOString()));
   const dates: Date[] = [];
 
   // The source row itself is the first occurrence — never re-create it.
-  let cursor = advance(source.date, source.frequency ?? Frequency.MONTHLY);
-  if (!cursor) return dates;
-
-  while (cursor <= end) {
-    if (!existing.has(cursor.toISOString())) dates.push(cursor);
-    cursor = advance(cursor, source.frequency ?? Frequency.MONTHLY) as Date;
+  for (let index = 1; ; index++) {
+    const date = occurrenceAt(source.date, source.frequency ?? Frequency.MONTHLY, index);
+    if (!date) break; // ONCE series have no further occurrences.
+    if (date > end) break;
+    if (!existing.has(date.toISOString())) dates.push(date);
   }
 
   return dates;
@@ -61,14 +68,33 @@ const missingDates = (source: RecurringSource<unknown>, materialized: Date[], en
 /**
  * Walks each recurring series once, generating every missing occurrence up to
  * `end`, and writes them in one `createMany` (unique-key safe) per series.
+ *
+ * Reads are bounded: materialised rows are fetched only for the source ids that
+ * actually exist (and only from the earliest source date) instead of loading
+ * every historical occurrence row for the whole workspace.
  */
 const materializeSeries = async <TCreate>(
   findSources: () => Promise<RecurringSource<TCreate>[]>,
-  findMaterialized: () => Promise<{ recurringSourceId: string | null; date: Date }[]>,
+  findMaterialized: (
+    sourceIds: string[],
+    from: Date,
+  ) => Promise<{ recurringSourceId: string | null; date: Date }[]>,
   createMany: (sourceId: string, fields: TCreate, dates: Date[]) => Promise<number>,
   end: Date,
 ): Promise<number> => {
-  const [sources, materializedRows] = await Promise.all([findSources(), findMaterialized()]);
+  const sources = await findSources();
+  if (sources.length === 0) return 0;
+
+  const from = startOfDayUtc(
+    sources.reduce(
+      (earliest, source) => (source.date < earliest ? source.date : earliest),
+      sources[0].date,
+    ),
+  );
+  const materializedRows = await findMaterialized(
+    sources.map((source) => source.id),
+    from,
+  );
 
   const bySource = new Map<string, Date[]>();
   for (const row of materializedRows) {
@@ -131,9 +157,9 @@ const findIncomeSources = async (): Promise<RecurringSource<IncomeSourceFields>[
   }));
 };
 
-const findIncomeMaterialized = () =>
+const findIncomeMaterialized = (sourceIds: string[], from: Date) =>
   prisma.income.findMany({
-    where: { recurringSourceId: { not: null } },
+    where: { recurringSourceId: { in: sourceIds }, date: { gte: from } },
     select: { recurringSourceId: true, date: true },
   });
 
@@ -201,9 +227,9 @@ const findExpenseSources = async (): Promise<RecurringSource<ExpenseSourceFields
   }));
 };
 
-const findExpenseMaterialized = () =>
+const findExpenseMaterialized = (sourceIds: string[], from: Date) =>
   prisma.expense.findMany({
-    where: { recurringSourceId: { not: null } },
+    where: { recurringSourceId: { in: sourceIds }, date: { gte: from } },
     select: { recurringSourceId: true, date: true },
   });
 
@@ -267,9 +293,12 @@ const findBillSources = async (): Promise<RecurringSource<BillSourceFields>[]> =
   }));
 };
 
-const findBillMaterialized = async (): Promise<{ recurringSourceId: string | null; date: Date }[]> => {
+const findBillMaterialized = async (
+  sourceIds: string[],
+  from: Date,
+): Promise<{ recurringSourceId: string | null; date: Date }[]> => {
   const rows = await prisma.bill.findMany({
-    where: { recurringSourceId: { not: null } },
+    where: { recurringSourceId: { in: sourceIds }, dueDate: { gte: from } },
     select: { recurringSourceId: true, dueDate: true },
   });
   // The generic sweep keys materialised rows on `date`; bills keep theirs on `dueDate`.

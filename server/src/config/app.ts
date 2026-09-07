@@ -22,6 +22,10 @@ export const createApp = (): express.Application => {
   app.options('*', cors(corsOptions));
 
   // ── Body parsing
+  // The payment-provider webhook verifies an HMAC over the *raw* body, so it
+  // must be captured before express.json() converts it. That consumer is routed
+  // later as /api/v1/subscriptions/webhook.
+  app.use('/api/v1/subscriptions/webhook', express.raw({ type: () => true }));
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());

@@ -5,7 +5,6 @@ export const upgradePlanSchema = z.object({
   plan: z.nativeEnum(PlanType).refine((v) => v !== 'FREE', 'Cannot upgrade to Free plan'),
   billingCycle: z.enum(['monthly', 'yearly']),
   paymentMethod: z.string().trim().max(50).optional(),
-  externalId: z.string().trim().max(200).optional(),
 });
 
 export const cancelSubscriptionSchema = z.object({

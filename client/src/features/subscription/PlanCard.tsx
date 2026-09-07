@@ -12,9 +12,18 @@ interface PlanCardProps {
   subscription: Subscription | null;
   onSelectPlan: (plan: PlanDefinition, billingCycle: 'monthly' | 'yearly') => void;
   isPending: boolean;
+  /** A payment is awaiting confirmation — no further plan changes until it settles. */
+  awaitingPayment: boolean;
 }
 
-const PlanCard = ({ plan, currentPlan, subscription, onSelectPlan, isPending }: PlanCardProps) => {
+const PlanCard = ({
+  plan,
+  currentPlan,
+  subscription,
+  onSelectPlan,
+  isPending,
+  awaitingPayment,
+}: PlanCardProps) => {
   const { format } = useCurrency();
   const isCurrent = plan.plan === currentPlan;
   const isFree = plan.plan === 'FREE';
@@ -81,11 +90,17 @@ const PlanCard = ({ plan, currentPlan, subscription, onSelectPlan, isPending }: 
             <Button
               className="w-full"
               variant={plan.plan === 'FAMILY' ? 'default' : 'outline'}
-              disabled={isPending}
+              disabled={isPending || awaitingPayment}
               onClick={() => onSelectPlan(plan, 'monthly')}
             >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isCurrent ? 'Current Plan' : subscription?.plan === 'FREE' ? 'Upgrade' : 'Switch'}
+              {awaitingPayment
+                ? 'Awaiting payment'
+                : isCurrent
+                  ? 'Current Plan'
+                  : subscription?.plan === 'FREE'
+                    ? 'Upgrade'
+                    : 'Switch'}
             </Button>
           )}
         </div>

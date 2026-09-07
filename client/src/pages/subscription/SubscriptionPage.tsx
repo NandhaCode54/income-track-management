@@ -79,7 +79,10 @@ const SubscriptionPage = () => {
     );
   }
 
+  const awaitingPayment = subscription?.status === 'PENDING_PAYMENT';
+
   const handleSelectPlan = (plan: PlanDefinition, billingCycle: 'monthly' | 'yearly') => {
+    if (awaitingPayment) return;
     upgrade.mutate({ plan: plan.plan, billingCycle });
   };
 
@@ -103,6 +106,7 @@ const SubscriptionPage = () => {
               subscription={subscription ?? null}
               onSelectPlan={handleSelectPlan}
               isPending={upgrade.isPending}
+              awaitingPayment={awaitingPayment}
             />
           ))}
         </div>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { resolveTenant } from '../../middlewares/tenant.middleware';
 import { requirePermission } from '../../middlewares/rbac.middleware';
+import { requirePlan } from '../../middlewares/plan.middleware';
 import { validate } from '../../middlewares/validate.middleware';
 import { insightsController } from './insights.controller';
 import { insightsPeriodSchema } from './insights.validator';
@@ -15,7 +16,7 @@ import { insightsPeriodSchema } from './insights.validator';
  */
 const router = Router();
 
-router.use(authenticate, resolveTenant);
+router.use(authenticate, resolveTenant, requirePlan('AI_INSIGHTS'));
 
 router.get('/', requirePermission('FINANCE_VIEW'), validate(insightsPeriodSchema, 'query'), insightsController.get);
 

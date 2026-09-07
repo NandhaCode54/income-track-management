@@ -90,6 +90,42 @@ export const PLAN_MEMBER_LIMITS: Record<PlanType, number | null> = {
   ENTERPRISE: null,
 };
 
+// ─── Entitlements ────────────────────────────────────────────────────────────
+
+/** Every API surface that is gated behind a paid plan, keyed for `requirePlan`. */
+export type PlanFeatureKey =
+  | 'AI_INSIGHTS'
+  | 'RECEIPTS'
+  | 'PORTFOLIO'
+  | 'ASSETS_LIABILITIES'
+  | 'CHIT_FUNDS'
+  | 'SCHOOL_FEES'
+  | 'PDF_EXPORT'
+  | 'EMAIL_REMINDERS';
+
+/**
+ * The minimum tier per feature. `ENTERPRISE` appears as a material plan type in
+ * the schema but is not purchaseable (see `canTransition`), so it is always
+ * included in the entitled set rather than referenced as a gate target.
+ */
+export const PLAN_FEATURE_ACCESS: Record<PlanFeatureKey, PlanType[]> = {
+  AI_INSIGHTS: ['PRO', 'FAMILY', 'ENTERPRISE'],
+  RECEIPTS: ['PRO', 'FAMILY', 'ENTERPRISE'],
+  PORTFOLIO: ['PRO', 'FAMILY', 'ENTERPRISE'],
+  ASSETS_LIABILITIES: ['FAMILY', 'ENTERPRISE'],
+  CHIT_FUNDS: ['FAMILY', 'ENTERPRISE'],
+  SCHOOL_FEES: ['FAMILY', 'ENTERPRISE'],
+  PDF_EXPORT: ['PRO', 'FAMILY', 'ENTERPRISE'],
+  EMAIL_REMINDERS: ['PRO', 'FAMILY', 'ENTERPRISE'],
+};
+
+/** The price the *server* records against a pending upgrade, never client input. */
+export const planPriceFor = (plan: PlanType, billingCycle: 'monthly' | 'yearly'): number => {
+  const def = PLAN_DEFINITIONS.find((p) => p.plan === plan);
+  if (!def) throw new Error(`No plan definition for ${plan}`);
+  return billingCycle === 'monthly' ? def.monthlyPrice : def.yearlyPrice;
+};
+
 // ─── DTOs ────────────────────────────────────────────────────────────────────
 
 export interface SubscriptionDto {
@@ -101,6 +137,9 @@ export interface SubscriptionDto {
   cancelledAt: Date | null;
   trialEndsAt: Date | null;
   paymentMethod: string | null;
+  pendingPlan: PlanType | null;
+  pendingBillingCycle: string | null;
+  pendingAmount: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,7 +154,6 @@ export interface UpgradePlanInput {
   plan: PlanType;
   billingCycle: 'monthly' | 'yearly';
   paymentMethod?: string;
-  externalId?: string;
 }
 
 export interface CancelSubscriptionInput {
@@ -133,6 +171,9 @@ const toDto = (row: Subscription): SubscriptionDto => ({
   cancelledAt: row.cancelledAt,
   trialEndsAt: row.trialEndsAt,
   paymentMethod: row.paymentMethod,
+  pendingPlan: row.pendingPlan,
+  pendingBillingCycle: row.pendingBillingCycle,
+  pendingAmount: row.pendingAmount ? Number(row.pendingAmount) : null,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });

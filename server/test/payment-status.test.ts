@@ -87,4 +87,31 @@ describe('payment reminder sweep — settlement classification', () => {
     expect(sent).toBe(0);
     expect(dispatchNotifications).not.toHaveBeenCalled();
   });
+
+  it('flips due-and-unpaid obligations to OVERDUE before reminding (regression: status never became OVERDUE)', async () => {
+    (prisma.bill.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (prisma.rent.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (prisma.schoolFee.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (prisma.chitFund.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (prisma.bill.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 1 });
+    (prisma.rent.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+    (prisma.schoolFee.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({ count: 0 });
+
+    await runPaymentReminders();
+
+    const today = startOfTodayUtc();
+    const sweepMocks = [
+      prisma.bill.updateMany,
+      prisma.rent.updateMany,
+      prisma.schoolFee.updateMany,
+    ];
+    for (const fn of sweepMocks) {
+      const call = (fn as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(call.where.dueDate.lt).toEqual(today);
+      expect(call.where.status.in).toEqual([PaymentStatus.PENDING, PaymentStatus.PARTIAL]);
+      expect(call.data.status).toBe(PaymentStatus.OVERDUE);
+    }
+    // Chit instalments are monthly obligations — the sweep leaves them alone.
+    expect(prisma.chitFund.updateMany).not.toHaveBeenCalled();
+  });
 });

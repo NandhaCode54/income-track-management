@@ -11,6 +11,15 @@ import { upgradePlanSchema, cancelSubscriptionSchema } from './subscription.vali
 const router = Router();
 router.use(authenticate, resolveTenant);
 
+/**
+ * The provider callback is public and mounts *before* the authenticated router
+ * (a webhook has no bearer token — its `x-webhook-signature` is the credential).
+ * `app.ts` feeds it the raw body so the signature can be verified over exactly
+ * what was sent.
+ */
+export const subscriptionWebhookRouter = Router();
+subscriptionWebhookRouter.post('/', subscriptionController.webhook);
+
 router.get(
   '/',
   requirePermission('SUBSCRIPTION_MANAGE'),
@@ -32,6 +41,14 @@ router.post(
   validate(upgradePlanSchema),
   audit({ action: AuditAction.UPDATE, entity: 'Subscription' }),
   subscriptionController.upgrade,
+);
+
+// Development-only: the stand-in provider completing a pending demo payment.
+router.post(
+  '/demo-pay',
+  requirePermission('SUBSCRIPTION_MANAGE'),
+  audit({ action: AuditAction.UPDATE, entity: 'Subscription' }),
+  subscriptionController.demoPay,
 );
 router.post(
   '/cancel',
